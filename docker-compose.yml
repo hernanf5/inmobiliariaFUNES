@@ -1,0 +1,15 @@
+services:
+  mysql: 
+    image: mysql:8
+    container_name: inmobiliaria-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: InmobiliariaDB
+    ports:
+      - "3306:3306"
+    volumes:
+      - inmobiliaria-mysql-data:/var/lib/mysql
+
+volumes:
+  inmobiliaria-mysql-data:
