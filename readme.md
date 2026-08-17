@@ -137,7 +137,6 @@ El script se encuentra en [`database/InmobiliariaDB.sql`](./database/Inmobiliari
 
 * Creación de la base de datos `InmobiliariaDB`.
 * Creación de todas las tablas del modelo (Propietario, Inquilino, Inmueble, TipoInmueble, ImagenInmueble, Reserva, Pago, Usuario) con sus claves primarias, foráneas y restricciones.
-* Carga de datos iniciales: tipos de inmueble por defecto y un usuario administrador base.
 
 ### Instrucciones para levantar la base de datos
 

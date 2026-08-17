@@ -24,7 +24,7 @@ CREATE TABLE Propietario (
     Apellido        VARCHAR(100) NOT NULL,
     DniCuit         VARCHAR(20)  NOT NULL UNIQUE,
     Telefono        VARCHAR(30)  NULL,
-    Email           VARCHAR(150) NULL,
+    Email           VARCHAR(150) NOT NULL,
     Activo          TINYINT(1) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB;
 
