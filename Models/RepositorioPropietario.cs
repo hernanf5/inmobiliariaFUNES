@@ -17,8 +17,8 @@ namespace inmobiliariaFUNES.Models
             int res = -1;
             using (MySqlConnection connection = new MySqlConnection(connectionString))
             {
-                string sql = @"INSERT INTO Propietario
-                    (Nombre, Apellido, DniCuit, Telefono, Email)
+                string sql = @$"INSERT INTO Propietario
+                    ({nameof(Propietario.Nombre)}, {nameof(Propietario.Apellido)}, {nameof(Propietario.DniCuit)}, {nameof(Propietario.Telefono)}, {nameof(Propietario.Email)})
                     VALUES (@nombre, @apellido, @dniCuit, @telefono, @email);
                     SELECT LAST_INSERT_ID();";
                 using (MySqlCommand command = new MySqlCommand(sql, connection))
@@ -43,7 +43,7 @@ namespace inmobiliariaFUNES.Models
             int res = -1;
             using (MySqlConnection connection = new MySqlConnection(connectionString))
             {
-                string sql = "DELETE FROM Propietario WHERE IdPropietario = @id";
+                string sql = @$"UPDATE Propietario SET {nameof(Propietario.Activo)} = 0 WHERE {nameof(Propietario.IdPropietario)} = @id";
                 using (MySqlCommand command = new MySqlCommand(sql, connection))
                 {
                     command.CommandType = CommandType.Text;
@@ -61,9 +61,9 @@ namespace inmobiliariaFUNES.Models
             int res = -1;
             using (MySqlConnection connection = new MySqlConnection(connectionString))
             {
-                string sql = @"UPDATE Propietario
-                    SET Nombre=@nombre, Apellido=@apellido, DniCuit=@dniCuit, Telefono=@telefono, Email=@email
-                    WHERE IdPropietario = @id";
+                string sql = @$"UPDATE Propietario
+                    SET {nameof(Propietario.Nombre)}=@nombre, {nameof(Propietario.Apellido)}=@apellido, {nameof(Propietario.DniCuit)}=@dniCuit, {nameof(Propietario.Telefono)}=@telefono, {nameof(Propietario.Email)}=@email
+                    WHERE {nameof(Propietario.IdPropietario)} = @id";
                 using (MySqlCommand command = new MySqlCommand(sql, connection))
                 {
                     command.CommandType = CommandType.Text;
@@ -87,9 +87,10 @@ namespace inmobiliariaFUNES.Models
             using (MySqlConnection connection = new MySqlConnection(connectionString))
             {
                 string sql = @$"
-                    SELECT IdPropietario, Nombre, Apellido, DniCuit, Telefono, Email, Activo
+                    SELECT {nameof(Propietario.IdPropietario)}, {nameof(Propietario.Nombre)}, {nameof(Propietario.Apellido)}, {nameof(Propietario.DniCuit)}, {nameof(Propietario.Telefono)}, {nameof(Propietario.Email)}, {nameof(Propietario.Activo)}
                     FROM Propietario
-                    ORDER BY IdPropietario
+                    WHERE {nameof(Propietario.Activo)} = 1
+                    ORDER BY {nameof(Propietario.IdPropietario)}
                     LIMIT {tamPagina} OFFSET {(paginaNro - 1) * tamPagina}
                 ";
                 using (MySqlCommand command = new MySqlCommand(sql, connection))
@@ -112,7 +113,7 @@ namespace inmobiliariaFUNES.Models
             int res = 0;
             using (MySqlConnection connection = new MySqlConnection(connectionString))
             {
-                string sql = "SELECT COUNT(IdPropietario) FROM Propietario";
+                string sql = @$"SELECT COUNT({nameof(Propietario.IdPropietario)}) FROM Propietario WHERE {nameof(Propietario.Activo)} = 1";
                 using (MySqlCommand command = new MySqlCommand(sql, connection))
                 {
                     command.CommandType = CommandType.Text;
@@ -129,9 +130,9 @@ namespace inmobiliariaFUNES.Models
             Propietario? p = null;
             using (MySqlConnection connection = new MySqlConnection(connectionString))
             {
-                string sql = @"SELECT IdPropietario, Nombre, Apellido, DniCuit, Telefono, Email, Activo
+                string sql = @$"SELECT {nameof(Propietario.IdPropietario)}, {nameof(Propietario.Nombre)}, {nameof(Propietario.Apellido)}, {nameof(Propietario.DniCuit)}, {nameof(Propietario.Telefono)}, {nameof(Propietario.Email)}, {nameof(Propietario.Activo)}
                     FROM Propietario
-                    WHERE IdPropietario = @id";
+                    WHERE {nameof(Propietario.IdPropietario)} = @id";
                 using (MySqlCommand command = new MySqlCommand(sql, connection))
                 {
                     command.Parameters.AddWithValue("@id", id);
@@ -153,9 +154,9 @@ namespace inmobiliariaFUNES.Models
             Propietario? p = null;
             using (MySqlConnection connection = new MySqlConnection(connectionString))
             {
-                string sql = @"SELECT IdPropietario, Nombre, Apellido, DniCuit, Telefono, Email, Activo
+                string sql = @$"SELECT {nameof(Propietario.IdPropietario)}, {nameof(Propietario.Nombre)}, {nameof(Propietario.Apellido)}, {nameof(Propietario.DniCuit)}, {nameof(Propietario.Telefono)}, {nameof(Propietario.Email)}, {nameof(Propietario.Activo)}
                     FROM Propietario
-                    WHERE Email = @email";
+                    WHERE {nameof(Propietario.Email)} = @email";
                 using (MySqlCommand command = new MySqlCommand(sql, connection))
                 {
                     command.CommandType = CommandType.Text;
@@ -178,9 +179,9 @@ namespace inmobiliariaFUNES.Models
             nombre = "%" + nombre + "%";
             using (MySqlConnection connection = new MySqlConnection(connectionString))
             {
-                string sql = @"SELECT IdPropietario, Nombre, Apellido, DniCuit, Telefono, Email, Activo
+                string sql = @$"SELECT {nameof(Propietario.IdPropietario)}, {nameof(Propietario.Nombre)}, {nameof(Propietario.Apellido)}, {nameof(Propietario.DniCuit)}, {nameof(Propietario.Telefono)}, {nameof(Propietario.Email)}, {nameof(Propietario.Activo)}
                     FROM Propietario
-                    WHERE Nombre LIKE @nombre OR Apellido LIKE @nombre";
+                    WHERE {nameof(Propietario.Nombre)} LIKE @nombre OR {nameof(Propietario.Apellido)} LIKE @nombre";
                 using (MySqlCommand command = new MySqlCommand(sql, connection))
                 {
                     command.Parameters.AddWithValue("@nombre", nombre);
@@ -201,13 +202,13 @@ namespace inmobiliariaFUNES.Models
         {
             return new Propietario
             {
-                IdPropietario = reader.GetInt32(reader.GetOrdinal("IdPropietario")),
-                Nombre = reader.GetString(reader.GetOrdinal("Nombre")),
-                Apellido = reader.GetString(reader.GetOrdinal("Apellido")),
-                DniCuit = reader.GetString(reader.GetOrdinal("DniCuit")),
-                Telefono = reader.GetString(reader.GetOrdinal("Telefono")),
-                Email = reader.GetString(reader.GetOrdinal("Email")),
-                Activo = reader.GetBoolean(reader.GetOrdinal("Activo")),
+                IdPropietario = reader.GetInt32(reader.GetOrdinal(nameof(Propietario.IdPropietario))),
+                Nombre = reader.GetString(reader.GetOrdinal(nameof(Propietario.Nombre))),
+                Apellido = reader.GetString(reader.GetOrdinal(nameof(Propietario.Apellido))),
+                DniCuit = reader.GetString(reader.GetOrdinal(nameof(Propietario.DniCuit))),
+                Telefono = reader.GetString(reader.GetOrdinal(nameof(Propietario.Telefono))),
+                Email = reader.GetString(reader.GetOrdinal(nameof(Propietario.Email))),
+                Activo = reader.GetBoolean(reader.GetOrdinal(nameof(Propietario.Activo))),
             };
         }
     }
