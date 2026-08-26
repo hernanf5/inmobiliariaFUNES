@@ -1,0 +1,26 @@
+@model inmobiliariaFUNES.Models.Inquilino
+
+@{
+    ViewData["Title"] = "Detalle de inquilino";
+}
+
+<h1 class="text-2xl font-semibold text-gray-900 mb-6">@Model.Nombre @Model.Apellido</h1>
+
+<div class="bg-white border border-gray-200 rounded-lg p-6 max-w-xl divide-y divide-gray-100">
+    <div class="py-3 flex justify-between text-sm">
+        <span class="text-gray-500">DNI</span>
+        <span class="text-gray-900">@Model.Dni</span>
+    </div>
+    <div class="py-3 flex justify-between text-sm">
+        <span class="text-gray-500">Teléfono</span>
+        <span class="text-gray-900">@Model.Telefono</span>
+    </div>
+    <div class="py-3 flex justify-between text-sm">
+        <span class="text-gray-500">Email</span>
+        <span class="text-gray-900">@Model.Email</span>
+    </div>
+</div>
+
+<div class="mt-6">
+    <a asp-action="Index" class="text-sm text-indigo-600 hover:text-indigo-800">&larr; Volver al listado</a>
+</div>

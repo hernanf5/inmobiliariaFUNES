@@ -1,0 +1,37 @@
+@model inmobiliariaFUNES.Models.Inquilino
+
+@{
+    ViewData["Title"] = "Dar de baja inquilino";
+}
+
+<h1 class="text-2xl font-semibold text-gray-900 mb-2">Dar de baja</h1>
+<p class="text-sm text-gray-600 mb-6">
+    ¿Está seguro que desea dar de baja al inquilino <strong>@Model.Nombre @Model.Apellido</strong>?
+</p>
+
+<div class="bg-white border border-gray-200 rounded-lg p-6 max-w-xl divide-y divide-gray-100 mb-6">
+    <div class="py-3 flex justify-between text-sm">
+        <span class="text-gray-500">Nombre</span>
+        <span class="text-gray-900">@Model.Nombre @Model.Apellido</span>
+    </div>
+    <div class="py-3 flex justify-between text-sm">
+        <span class="text-gray-500">DNI</span>
+        <span class="text-gray-900">@Model.Dni</span>
+    </div>
+    <div class="py-3 flex justify-between text-sm">
+        <span class="text-gray-500">Email</span>
+        <span class="text-gray-900">@Model.Email</span>
+    </div>
+</div>
+
+<form asp-action="Eliminar" asp-route-id="@Model.IdInquilino" method="post">
+    <input type="hidden" asp-for="IdInquilino" />
+    <div class="flex gap-3">
+        <button type="submit" class="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700">
+            Confirmar baja
+        </button>
+        <a asp-action="Index" class="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+            Cancelar
+        </a>
+    </div>
+</form>
