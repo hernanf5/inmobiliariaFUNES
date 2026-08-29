@@ -69,19 +69,6 @@ namespace inmobiliariaFUNES.Controllers
             }
         }
 
-        // Get: Propietarios/Busqueda
-        public IActionResult Busqueda()
-        {
-            try
-            {
-                return View();
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error en Busqueda");
-                throw;
-            }
-        }
 
         //GET: Propietarios/Buscar/algo
         [Route("[controller]/Buscar.{q}", Name = "BuscarPropietarios")]
