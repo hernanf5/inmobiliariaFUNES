@@ -1,0 +1,72 @@
+@model inmobiliariaFUNES.Models.Inmueble
+
+@{
+    ViewData["Title"] = "Detalle de inmueble";
+    var portada = Model.Imagenes.FirstOrDefault(i => i.EsPortada);
+}
+
+<h1 class="text-2xl font-semibold text-gray-900 mb-6">@Model.Direccion</h1>
+
+@if (portada != null)
+{
+    <img src="@portada.Url" class="w-full max-h-80 object-cover rounded-lg border border-gray-200 mb-6" />
+}
+<div class="bg-white border border-gray-200 rounded-lg p-6 max-w-xl divide-y divide-gray-100">
+    <div class="py-3 flex justify-between text-sm">
+        <span class="text-gray-500">Estado</span>
+        @if (Model.Estado == "Disponible")
+        {
+            <span class="inline-flex rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800">Disponible</span>
+        }
+        else
+        {
+            <span class="inline-flex rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600">Suspendido</span>
+        }
+    </div>
+    <div class="py-3 flex justify-between text-sm">
+        <span class="text-gray-500">Tipo</span>
+        <span class="text-gray-900">@Model.TipoInmueble?.Nombre</span>
+    </div>
+    <div class="py-3 flex justify-between text-sm">
+        <span class="text-gray-500">Propietario</span>
+        <span class="text-gray-900">@Model.Propietario?.Nombre @Model.Propietario?.Apellido</span>
+    </div>
+    <div class="py-3 flex justify-between text-sm">
+        <span class="text-gray-500">Cupo</span>
+        <span class="text-gray-900">@Model.Cupo personas</span>
+    </div>
+    <div class="py-3 flex justify-between text-sm">
+        <span class="text-gray-500">Precio por día</span>
+        <span class="text-gray-900">$@Model.PrecioPorDia.ToString("N2")</span>
+    </div>
+    <div class="py-3 flex justify-between text-sm">
+        <span class="text-gray-500">% Reserva</span>
+        <span class="text-gray-900">@Model.PorcentajeReserva.ToString("N0")%</span>
+    </div>
+    @if (Model.Latitud != null && Model.Longitud != null)
+    {
+        <div class="py-3 flex justify-between text-sm">
+            <span class="text-gray-500">Coordenadas</span>
+            <span class="text-gray-900">@Model.Latitud, @Model.Longitud</span>
+        </div>
+    }
+</div>
+@{
+    var galeria = Model.Imagenes.Where(i => !i.EsPortada).ToList();
+}
+@if (galeria.Any())
+{
+    <div class="mt-6">
+        <h2 class="text-sm font-medium text-gray-700 mb-2">Galería</h2>
+        <div class="grid grid-cols-4 gap-2">
+            @foreach (var img in galeria)
+            {
+                <img src="@img.Url" class="w-full h-24 object-cover rounded-md border border-gray-200" />
+            }
+        </div>
+    </div>
+}
+
+<div class="mt-6">
+    <a asp-action="Index" class="text-sm text-indigo-600 hover:text-indigo-800">&larr; Volver al listado</a>
+</div>

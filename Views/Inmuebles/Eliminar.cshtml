@@ -1,0 +1,37 @@
+@model inmobiliariaFUNES.Models.Inmueble
+
+@{
+    ViewData["Title"] = "Suspender inmueble";
+}
+
+<h1 class="text-2xl font-semibold text-gray-900 mb-2">Suspender oferta</h1>
+<p class="text-sm text-gray-600 mb-6">
+    El inmueble deja de aparecer en los listados de disponibilidad para alquilar. No afecta las reservas ya creadas, y podés reactivarlo más adelante editándolo.
+</p>
+
+<div class="bg-white border border-gray-200 rounded-lg p-6 max-w-xl divide-y divide-gray-100 mb-6">
+    <div class="py-3 flex justify-between text-sm">
+        <span class="text-gray-500">Dirección</span>
+        <span class="text-gray-900">@Model.Direccion</span>
+    </div>
+    <div class="py-3 flex justify-between text-sm">
+        <span class="text-gray-500">Tipo</span>
+        <span class="text-gray-900">@Model.TipoInmueble?.Nombre</span>
+    </div>
+    <div class="py-3 flex justify-between text-sm">
+        <span class="text-gray-500">Propietario</span>
+        <span class="text-gray-900">@Model.Propietario?.Nombre @Model.Propietario?.Apellido</span>
+    </div>
+</div>
+
+<form asp-action="Eliminar" asp-route-id="@Model.IdInmueble" method="post">
+    <input type="hidden" asp-for="IdInmueble" />
+    <div class="flex gap-3">
+        <button type="submit" class="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700">
+            Confirmar suspensión
+        </button>
+        <a asp-action="Index" class="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+            Cancelar
+        </a>
+    </div>
+</form>

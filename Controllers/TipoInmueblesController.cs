@@ -4,28 +4,28 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace inmobiliariaFUNES.Controllers
 {
-    public class PropietariosController : Controller
+    public class TipoInmueblesController : Controller
     {
-        private readonly IRepositorioPropietario repositorio;
-        private readonly ILogger<PropietariosController> logger;
+        private readonly IRepositorioTipoInmueble repositorio;
+        private readonly ILogger<TipoInmueblesController> logger;
 
-        public PropietariosController(IRepositorioPropietario repo, ILogger<PropietariosController> logger)
+        public TipoInmueblesController(IRepositorioTipoInmueble repo, ILogger<TipoInmueblesController> logger)
         {
             this.repositorio = repo;
             this.logger = logger;
         }
 
-        // GET: Propietarios
+        // GET: TipoInmuebles
         [Route("[controller]/Index")]
         public ActionResult Index(int pagina = 1)
         {
             try
             {
-                var tamaño = 5;
+                var tamaño = 10;
                 var lista = repositorio.ObtenerLista(Math.Max(pagina, 1), tamaño);
                 ViewBag.Pagina = pagina;
                 var total = repositorio.ObtenerCantidad();
-                ViewBag.TotalPaginas = total % tamaño == 0 ? total/tamaño : total / tamaño + 1;
+                ViewBag.TotalPaginas = total % tamaño == 0 ? total / tamaño : total / tamaño + 1;
                 ViewBag.Id = TempData["Id"];
                 if (TempData.ContainsKey("Mensaje"))
                     ViewBag.Mensaje = TempData["Mensaje"];
@@ -38,8 +38,8 @@ namespace inmobiliariaFUNES.Controllers
             }
         }
 
-        //GET: Propietarios/Details/5
-        public IActionResult Details(int id)
+                // GET: TipoInmuebles/Details/5
+        public ActionResult Details(int id)
         {
             try
             {
@@ -55,38 +55,7 @@ namespace inmobiliariaFUNES.Controllers
             }
         }
 
-        //GET: Propietarios/Obtener/5
-        public IActionResult Obtener(int id)
-        {
-            try
-            {
-                var res = repositorio.ObtenerPorId(id);
-                return Ok(res);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-
-        //GET: Propietarios/Buscar/algo
-        [Route("[controller]/Buscar.{q}", Name = "BuscarPropietarios")]
-        public IActionResult Buscar(string q)
-        {
-            try
-            {
-                var res = repositorio.BuscarPorNombre(q);
-                return Json(new {Datos = res});
-            }
-            catch (Exception ex)
-            {
-                
-                return Json(new { Error = ex.Message});
-            }
-        }
-
-        //GET: Propietarios/Create
+        // GET: TipoInmuebles/Create
         public ActionResult Create()
         {
             try
@@ -100,23 +69,22 @@ namespace inmobiliariaFUNES.Controllers
             }
         }
 
-        //POST: Propietarios/Create
+        // POST: TipoInmuebles/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(Propietario propietario)
+        public ActionResult Create(TipoInmueble tipoInmueble)
         {
             try
             {
                 if (ModelState.IsValid)
                 {
-                    repositorio.Alta(propietario);
-                    TempData["Id"] = propietario.IdPropietario;
-                    TempData["Mensaje"] = "Propietario creado correctamente";
-
+                    repositorio.Alta(tipoInmueble);
+                    TempData["Id"] = tipoInmueble.IdTipoInmueble;
+                    TempData["Mensaje"] = "Tipo de inmueble creado correctamente";
                     return RedirectToAction(nameof(Index));
                 }
                 else
-                    return View(propietario);
+                    return View(tipoInmueble);
             }
             catch (Exception ex)
             {
@@ -125,7 +93,7 @@ namespace inmobiliariaFUNES.Controllers
             }
         }
 
-        //GET: Propietarios/Edit/5
+                // GET: TipoInmuebles/Edit/5
         public ActionResult Edit(int id)
         {
             try
@@ -142,36 +110,33 @@ namespace inmobiliariaFUNES.Controllers
             }
         }
 
-        //POST: Propietarios/Edit/5
+        // POST: TipoInmuebles/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, Propietario entidad)
+        public ActionResult Edit(int id, TipoInmueble entidad)
         {
             try
             {
-                var p = repositorio.ObtenerPorId(id);
-                if(p == null)
+                var t = repositorio.ObtenerPorId(id);
+                if (t == null)
                     return NotFound();
+
                 if (!ModelState.IsValid)
                     return View(entidad);
-                
-                p.Nombre = entidad.Nombre;
-                p.Apellido = entidad.Apellido;
-                p.DniCuit = entidad.DniCuit;
-                p.Email = entidad.Email;
-                p.Telefono = entidad.Telefono;
-                repositorio.Modificacion(p);
+
+                t.Nombre = entidad.Nombre;
+                repositorio.Modificacion(t);
                 TempData["Mensaje"] = "Datos guardados correctamente";
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Error en edit");
+                logger.LogError(ex, "Error en Edit");
                 throw;
             }
         }
 
-        //GET: Propietarios/Eliminar/5
+        // GET: TipoInmuebles/Eliminar/5
         public ActionResult Eliminar(int id)
         {
             try
@@ -188,18 +153,19 @@ namespace inmobiliariaFUNES.Controllers
             }
         }
 
-        //POST: Propietarios/Eliminar/5
+        // POST: TipoInmuebles/Eliminar/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Eliminar(int id, Propietario entidad)
+        public ActionResult Eliminar(int id, TipoInmueble entidad)
         {
             try
             {
-                var p = repositorio.ObtenerPorId(id);
-                if (p == null)
+                var t = repositorio.ObtenerPorId(id);
+                if (t == null)
                     return NotFound();
-                repositorio.Baja(p);
-                TempData["Mensaje"] = "Eliminación realizada correctamente";
+
+                repositorio.Baja(t);
+                TempData["Mensaje"] = "Baja realizada correctamente";
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
