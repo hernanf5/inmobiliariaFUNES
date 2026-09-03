@@ -1,0 +1,37 @@
+@model inmobiliariaFUNES.Models.Reserva
+
+@{
+    ViewData["Title"] = "Cancelar reserva";
+}
+
+<h1 class="text-2xl font-semibold text-gray-900 mb-2">Cancelar reserva</h1>
+<p class="text-sm text-gray-600 mb-6">
+    La reserva queda marcada como cancelada y libera el inmueble para esas fechas. Esta acción no puede deshacerse.
+</p>
+
+<div class="bg-white border border-gray-200 rounded-lg p-6 max-w-xl divide-y divide-gray-100 mb-6">
+    <div class="py-3 flex justify-between text-sm">
+        <span class="text-gray-500">Inmueble</span>
+        <span class="text-gray-900">@Model.Inmueble?.Direccion</span>
+    </div>
+    <div class="py-3 flex justify-between text-sm">
+        <span class="text-gray-500">Inquilino</span>
+        <span class="text-gray-900">@Model.Inquilino?.Nombre @Model.Inquilino?.Apellido</span>
+    </div>
+    <div class="py-3 flex justify-between text-sm">
+        <span class="text-gray-500">Período</span>
+        <span class="text-gray-900">@Model.FechaDesde.ToString("dd/MM/yyyy") - @Model.FechaHastaOriginal.ToString("dd/MM/yyyy")</span>
+    </div>
+</div>
+
+<form asp-action="Eliminar" asp-route-id="@Model.IdReserva" method="post">
+    <input type="hidden" asp-for="IdReserva" />
+    <div class="flex gap-3">
+        <button type="submit" class="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700">
+            Confirmar cancelación
+        </button>
+        <a asp-action="Index" class="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+            Volver
+        </a>
+    </div>
+</form>

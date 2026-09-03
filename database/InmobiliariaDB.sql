@@ -86,7 +86,7 @@ CREATE TABLE Reserva (
     Estado                   VARCHAR(30) NOT NULL DEFAULT 'Vigente',
     IdUsuarioCreador          INT NOT NULL,
     IdUsuarioTerminador       INT NULL,
-    CONSTRAINT CK_Reserva_Estado CHECK (Estado IN ('Vigente', 'Finalizada', 'Terminada anticipadamente')),
+    CONSTRAINT CK_Reserva_Estado CHECK (Estado IN ('Vigente', 'Finalizada', 'Terminada anticipadamente', 'Cancelada')),
     CONSTRAINT CK_Reserva_Fechas CHECK (FechaHastaOriginal > FechaDesde),
     CONSTRAINT FK_Reserva_Inquilino FOREIGN KEY (IdInquilino) REFERENCES Inquilino(IdInquilino),
     CONSTRAINT FK_Reserva_Inmueble FOREIGN KEY (IdInmueble) REFERENCES Inmueble(IdInmueble),

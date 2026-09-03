@@ -1,0 +1,52 @@
+@model inmobiliariaFUNES.Models.Reserva
+
+@{
+    ViewData["Title"] = "Detalle de reserva";
+}
+
+<h1 class="text-2xl font-semibold text-gray-900 mb-6">Reserva #@Model.IdReserva</h1>
+
+<div class="bg-white border border-gray-200 rounded-lg p-6 max-w-xl divide-y divide-gray-100">
+    <div class="py-3 flex justify-between text-sm">
+        <span class="text-gray-500">Estado</span>
+        <span class="text-gray-900">@Model.Estado</span>
+    </div>
+    <div class="py-3 flex justify-between text-sm">
+        <span class="text-gray-500">Inmueble</span>
+        <span class="text-gray-900">@Model.Inmueble?.Direccion</span>
+    </div>
+    <div class="py-3 flex justify-between text-sm">
+        <span class="text-gray-500">Inquilino</span>
+        <span class="text-gray-900">@Model.Inquilino?.Nombre @Model.Inquilino?.Apellido</span>
+    </div>
+    <div class="py-3 flex justify-between text-sm">
+        <span class="text-gray-500">Fecha desde</span>
+        <span class="text-gray-900">@Model.FechaDesde.ToString("dd/MM/yyyy")</span>
+    </div>
+    <div class="py-3 flex justify-between text-sm">
+        <span class="text-gray-500">Fecha hasta (original)</span>
+        <span class="text-gray-900">@Model.FechaHastaOriginal.ToString("dd/MM/yyyy")</span>
+    </div>
+    <div class="py-3 flex justify-between text-sm">
+        <span class="text-gray-500">Monto por día</span>
+        <span class="text-gray-900">$@Model.MontoPorDia.ToString("N2")</span>
+    </div>
+    @if (Model.FechaTerminacion != null)
+    {
+        <div class="py-3 flex justify-between text-sm">
+            <span class="text-gray-500">Fecha de terminación anticipada</span>
+            <span class="text-gray-900">@Model.FechaTerminacion.Value.ToString("dd/MM/yyyy")</span>
+        </div>
+    }
+    @if (Model.Multa != null)
+    {
+        <div class="py-3 flex justify-between text-sm">
+            <span class="text-gray-500">Multa aplicada</span>
+            <span class="text-red-700 font-medium">$@Model.Multa.Value.ToString("N2")</span>
+        </div>
+    }
+</div>
+
+<div class="mt-6">
+    <a asp-action="Index" class="text-sm text-indigo-600 hover:text-indigo-800">&larr; Volver al listado</a>
+</div>

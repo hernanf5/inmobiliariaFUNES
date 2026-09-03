@@ -107,9 +107,18 @@ namespace inmobiliariaFUNES.Controllers
                     return View(inmueble);
                 }
 
-                repositorio.Alta(inmueble);
+                try
+                {
+                    repositorio.Alta(inmueble);
+                }
+                catch (MySqlConnector.MySqlException ex) when (ex.Message.Contains("Out of range"))
+                {
+                    ModelState.AddModelError(string.Empty, "Las coordenadas ingresadas no son válidas.");
+                    CargarListasDesplegables(inmueble.IdPropietario, inmueble.IdTipoInmueble);
+                    return View(inmueble);
+                }
 
-                                string carpetaInmueble = Path.Combine(environment.WebRootPath, "uploads", "inmuebles", inmueble.IdInmueble.ToString());
+                string carpetaInmueble = Path.Combine(environment.WebRootPath, "uploads", "inmuebles", inmueble.IdInmueble.ToString());
                 Directory.CreateDirectory(carpetaInmueble);
 
                 if (inmueble.PortadaFile != null && inmueble.PortadaFile.Length > 0)
@@ -208,7 +217,16 @@ namespace inmobiliariaFUNES.Controllers
                 i.Longitud = entidad.Longitud;
                 i.IdPropietario = entidad.IdPropietario;
                 i.IdTipoInmueble = entidad.IdTipoInmueble;
-                repositorio.Modificacion(i);
+                try
+                {
+                    repositorio.Modificacion(i);
+                }
+                catch (MySqlConnector.MySqlException ex) when (ex.Message.Contains("Out of range"))
+                {
+                    ModelState.AddModelError(string.Empty, "Las coordenadas ingresadas no son válidas.");
+                    CargarListasDesplegables(i.IdPropietario, i.IdTipoInmueble);
+                    return View(i);
+                }
 
                 string carpetaInmueble = Path.Combine(environment.WebRootPath, "uploads", "inmuebles", id.ToString());
                 Directory.CreateDirectory(carpetaInmueble);
