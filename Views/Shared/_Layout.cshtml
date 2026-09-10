@@ -32,6 +32,25 @@
                         <li>
                             <a class="text-gray-600 hover:text-gray-900" asp-area="" asp-controller="Reservas" asp-action="Index">Reservas</a>
                         </li>
+                        @if (User.IsInRole("Administrador"))
+                        {
+                            <li>
+                                <a class="text-gray-600 hover:text-gray-900" asp-area="" asp-controller="Usuarios" asp-action="Index">Usuarios</a>
+                            </li>
+                        }
+                        @if (User.Identity != null && User.Identity.IsAuthenticated)
+                        {
+                            <li class="text-gray-500">@User.FindFirst("NombreCompleto")?.Value</li>
+                            <li>
+                                <a class="text-gray-600 hover:text-gray-900" href="/salir">Salir</a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li>
+                                <a class="rounded-md bg-indigo-600 px-3 py-1.5 text-white hover:bg-indigo-700" asp-controller="Usuarios" asp-action="Login">Ingresar</a>
+                            </li>
+                        }
                     </ul>
                 </div>
             </div>

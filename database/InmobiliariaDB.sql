@@ -9,12 +9,12 @@ USE InmobiliariaDB;
 CREATE TABLE Usuario (
     IdUsuario       INT AUTO_INCREMENT PRIMARY KEY,
     Email           VARCHAR(150) NOT NULL UNIQUE,
-    PasswordHash    VARCHAR(256) NOT NULL,
+    Clave    VARCHAR(256) NOT NULL,
     Nombre          VARCHAR(100) NOT NULL,
-    Rol             VARCHAR(20)  NOT NULL,
+    Rol             TINYINT NOT NULL,
     AvatarUrl       VARCHAR(300) NULL,
     Activo          TINYINT(1) NOT NULL DEFAULT 1,
-    CONSTRAINT CK_Usuario_Rol CHECK (Rol IN ('Administrador', 'Empleado'))
+    CONSTRAINT CK_Usuario_Rol CHECK (Rol IN (1, 2))
 ) ENGINE=InnoDB;
 
 -- Tabla: Propietario
@@ -110,3 +110,11 @@ CREATE TABLE Pago (
     CONSTRAINT FK_Pago_UsuarioCreador FOREIGN KEY (IdUsuarioCreador) REFERENCES Usuario(IdUsuario),
     CONSTRAINT FK_Pago_UsuarioAnulador FOREIGN KEY (IdUsuarioAnulador) REFERENCES Usuario(IdUsuario)
 ) ENGINE=InnoDB;
+
+-- Usuarios de prueba (contraseñas hasheadas con PBKDF2-HMACSHA1,
+-- usando el Salt configurado en appsettings.json).
+-- admin@inmobiliaria.com / Admin1234
+-- empleado@inmobiliaria.com / Empleado1234
+INSERT INTO Usuario (Email, Clave, Nombre, Rol) VALUES
+    ('admin@inmobiliaria.com', 'ZUMCFFbXYqZU52sO1stRB0L6L7vKqA32JvQqhKrKu7o=', 'Administrador General', 1),
+    ('empleado@inmobiliaria.com', 'qAdHAAvcTYCjJ9VEdz6PADig1B30xy8ovCBxy/08010=', 'Empleado de Prueba', 2);

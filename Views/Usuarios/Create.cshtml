@@ -1,0 +1,48 @@
+@model inmobiliariaFUNES.Models.Usuario
+
+@{
+    ViewData["Title"] = "Nuevo usuario";
+}
+
+<h1 class="text-2xl font-semibold text-gray-900 mb-6">Nuevo usuario</h1>
+
+<div class="bg-white border border-gray-200 rounded-lg p-6 max-w-xl">
+    <form asp-action="Create" method="post">
+        <div asp-validation-summary="ModelOnly" class="mb-4 text-sm text-red-600"></div>
+
+        <div class="mb-4">
+            <label asp-for="Nombre" class="block text-sm font-medium text-gray-700 mb-1"></label>
+            <input asp-for="Nombre" class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            <span asp-validation-for="Nombre" class="text-sm text-red-600"></span>
+        </div>
+
+        <div class="mb-4">
+            <label asp-for="Email" class="block text-sm font-medium text-gray-700 mb-1"></label>
+            <input asp-for="Email" class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            <span asp-validation-for="Email" class="text-sm text-red-600"></span>
+        </div>
+
+        <div class="mb-4">
+            <label asp-for="Clave" class="block text-sm font-medium text-gray-700 mb-1"></label>
+            <input asp-for="Clave" class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            <span asp-validation-for="Clave" class="text-sm text-red-600"></span>
+        </div>
+
+        <div class="mb-6">
+            <label asp-for="Rol" class="block text-sm font-medium text-gray-700 mb-1"></label>
+            <select asp-for="Rol" asp-items="@(new SelectList(ViewBag.Roles, "Key", "Value"))" class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <option value="">-- Seleccionar --</option>
+            </select>
+            <span asp-validation-for="Rol" class="text-sm text-red-600"></span>
+        </div>
+
+        <div class="flex gap-3">
+            <button type="submit" class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">
+                Guardar
+            </button>
+            <a asp-action="Index" class="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                Cancelar
+            </a>
+        </div>
+    </form>
+</div>

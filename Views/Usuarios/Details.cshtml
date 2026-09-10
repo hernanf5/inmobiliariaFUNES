@@ -1,0 +1,22 @@
+@model inmobiliariaFUNES.Models.Usuario
+
+@{
+    ViewData["Title"] = "Detalle de usuario";
+}
+
+<h1 class="text-2xl font-semibold text-gray-900 mb-6">@Model.Nombre</h1>
+
+<div class="bg-white border border-gray-200 rounded-lg p-6 max-w-xl divide-y divide-gray-100">
+    <div class="py-3 flex justify-between text-sm">
+        <span class="text-gray-500">Email</span>
+        <span class="text-gray-900">@Model.Email</span>
+    </div>
+    <div class="py-3 flex justify-between text-sm">
+        <span class="text-gray-500">Rol</span>
+        <span class="text-gray-900">@Model.RolNombre</span>
+    </div>
+</div>
+
+<div class="mt-6">
+    <a asp-action="Index" class="text-sm text-indigo-600 hover:text-indigo-800">&larr; Volver al listado</a>
+</div>
