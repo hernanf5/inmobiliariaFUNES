@@ -1,0 +1,35 @@
+@model inmobiliariaFUNES.Models.Pago
+@using inmobiliariaFUNES.Models
+
+@{
+    ViewData["Title"] = "Editar concepto de pago";
+    var reserva = (Reserva)ViewBag.Reserva;
+}
+
+<div class="mb-6">
+    <a asp-action="Index" asp-route-idReserva="@reserva.IdReserva" class="text-sm text-indigo-600 hover:text-indigo-800">&larr; Volver a los pagos</a>
+</div>
+
+<h1 class="text-2xl font-semibold text-gray-900 mb-1">Editar concepto</h1>
+<p class="text-sm text-gray-600 mb-6">
+    Solo se puede modificar el concepto. El monto ($@Model.Importe.ToString("N2")) y la fecha (@Model.FechaPago.ToString("dd/MM/yyyy")) quedan fijos una vez cargado el pago.
+</p>
+
+<div class="bg-white border border-gray-200 rounded-lg p-6 max-w-xl">
+    <form asp-action="Edit" asp-route-id="@Model.IdPago" method="post">
+        <div class="mb-6">
+            <label for="concepto" class="block text-sm font-medium text-gray-700 mb-1">Concepto</label>
+            <input type="text" id="concepto" name="concepto" value="@Model.Concepto" required
+                    class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+        </div>
+
+        <div class="flex gap-3">
+            <button type="submit" class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">
+                Guardar
+            </button>
+            <a asp-action="Index" asp-route-idReserva="@reserva.IdReserva" class="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                Cancelar
+            </a>
+        </div>
+    </form>
+</div>
