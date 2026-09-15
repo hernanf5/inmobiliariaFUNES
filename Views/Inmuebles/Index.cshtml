@@ -4,10 +4,30 @@
     ViewData["Title"] = "Inmuebles";
 }
 
-<div class="flex items-center justify-between mb-6">
+<div class="flex items-center justify-between mb-4">
     <h1 class="text-2xl font-semibold text-gray-900">Inmuebles</h1>
     <a asp-action="Create" class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">
         + Nuevo inmueble
+    </a>
+</div>
+
+@if (ViewBag.NombrePropietarioFiltro != null)
+{
+    <div class="mb-4 flex items-center justify-between rounded-md bg-indigo-50 border border-indigo-200 px-4 py-3 text-sm text-indigo-800">
+        <span>Mostrando inmuebles de: <strong>@ViewBag.NombrePropietarioFiltro</strong></span>
+        <a asp-action="Index" class="text-indigo-600 hover:text-indigo-900 underline">Quitar filtro</a>
+    </div>
+}
+
+<div class="mb-6 flex gap-2">
+    <a asp-action="Index" class="px-3 py-1.5 rounded-md text-sm @(ViewBag.EstadoFiltro == null ? "bg-indigo-600 text-white" : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50")">
+        Todos
+    </a>
+    <a asp-action="Index" asp-route-estado="Disponible" class="px-3 py-1.5 rounded-md text-sm @(ViewBag.EstadoFiltro?.ToString() == "Disponible" ? "bg-indigo-600 text-white" : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50")">
+        Disponibles
+    </a>
+    <a asp-action="Index" asp-route-estado="Suspendido" class="px-3 py-1.5 rounded-md text-sm @(ViewBag.EstadoFiltro?.ToString() == "Suspendido" ? "bg-indigo-600 text-white" : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50")">
+        Suspendidos
     </a>
 </div>
 
@@ -81,9 +101,9 @@
     <div class="mt-4 flex gap-2">
         @for (int i = 1; i <= totalPaginas; i++)
         {
-            <a asp-action="Index" asp-route-pagina="@i"
+            <a asp-action="Index" asp-route-pagina="@i" asp-route-estado="@ViewBag.EstadoFiltro" asp-route-idPropietario="@ViewBag.IdPropietarioFiltro"
                 class="px-3 py-1 rounded-md text-sm @(i == paginaActual ? "bg-indigo-600 text-white" : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50")">
-                    @i
+                @i
             </a>
         }
     </div>

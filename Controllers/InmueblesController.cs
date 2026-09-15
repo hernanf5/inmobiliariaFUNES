@@ -32,14 +32,21 @@ namespace inmobiliariaFUNES.Controllers
 
         // GET: Inmuebles
         [Route("[controller]/Index")]
-        public ActionResult Index(int pagina = 1)
+        public ActionResult Index(int pagina = 1, string? estado = null, int? idPropietario = null)
         {
             try
             {
                 var tamaño = 10;
-                var lista = repositorio.ObtenerLista(Math.Max(pagina, 1), tamaño);
+                var lista = repositorio.ObtenerLista(Math.Max(pagina, 1), tamaño, estado, idPropietario);
                 ViewBag.Pagina = pagina;
-                var total = repositorio.ObtenerCantidad();
+                ViewBag.EstadoFiltro = estado;
+                ViewBag.IdPropietarioFiltro = idPropietario;
+                if (idPropietario.HasValue)
+                {
+                    var propietario = repositorioPropietario.ObtenerPorId(idPropietario.Value);
+                    ViewBag.NombrePropietarioFiltro = propietario?.ToString();
+                }
+                var total = repositorio.ObtenerCantidad(estado, idPropietario);
                 ViewBag.TotalPaginas = total % tamaño == 0 ? total / tamaño : total / tamaño + 1;
                 ViewBag.Id = TempData["Id"];
                 if (TempData.ContainsKey("Mensaje"))

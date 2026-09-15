@@ -46,5 +46,6 @@ namespace inmobiliariaFUNES.Models
 
         public IFormFile? PortadaFile { get; set; }
         public IList<IFormFile>? GaleriaFiles { get; set; }
+        public int CantidadReservas { get; set; }
     }
 }

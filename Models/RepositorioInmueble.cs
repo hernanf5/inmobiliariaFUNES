@@ -46,10 +46,6 @@ namespace inmobiliariaFUNES.Models
             int res = -1;
             using (MySqlConnection connection = new MySqlConnection(connectionString))
             {
-                // Acá "Baja" no significa borrar ni marcar inactivo genérico:
-                // la narrativa pide que el propietario pueda "suspender" la oferta
-                // de un inmueble, así que reusamos el campo Estado que ya existe
-                // en el schema para eso. No afecta reservas ya creadas.
                 string sql = @$"UPDATE Inmueble SET {nameof(Inmueble.Estado)} = 'Suspendido' WHERE {nameof(Inmueble.IdInmueble)} = @id";
                 using (MySqlCommand command = new MySqlCommand(sql, connection))
                 {
@@ -113,9 +109,20 @@ namespace inmobiliariaFUNES.Models
 
         public IList<Inmueble> ObtenerLista(int paginaNro = 1, int tamPagina = 10)
         {
+            return ObtenerLista(paginaNro, tamPagina, null, null);
+        }
+
+        public IList<Inmueble> ObtenerLista(int paginaNro, int tamPagina, string? estado, int? idPropietario)
+        {
             IList<Inmueble> res = new List<Inmueble>();
             using (MySqlConnection connection = new MySqlConnection(connectionString))
             {
+                string filtro = "";
+                if (!string.IsNullOrEmpty(estado))
+                    filtro += $" AND i.{nameof(Inmueble.Estado)} = @estado";
+                if (idPropietario.HasValue)
+                    filtro += $" AND i.{nameof(Inmueble.IdPropietario)} = @idPropietario";
+
                 string sql = @$"
                     SELECT i.{nameof(Inmueble.IdInmueble)}, i.{nameof(Inmueble.Direccion)}, i.{nameof(Inmueble.Cupo)},
                         i.{nameof(Inmueble.PrecioPorDia)}, i.{nameof(Inmueble.PorcentajeReserva)}, i.{nameof(Inmueble.Latitud)}, i.{nameof(Inmueble.Longitud)},
@@ -125,12 +132,17 @@ namespace inmobiliariaFUNES.Models
                     FROM Inmueble i
                     INNER JOIN Propietario p ON i.{nameof(Inmueble.IdPropietario)} = p.{nameof(Propietario.IdPropietario)}
                     INNER JOIN TipoInmueble t ON i.{nameof(Inmueble.IdTipoInmueble)} = t.{nameof(TipoInmueble.IdTipoInmueble)}
+                    WHERE 1=1 {filtro}
                     ORDER BY i.{nameof(Inmueble.IdInmueble)}
                     LIMIT {tamPagina} OFFSET {(paginaNro - 1) * tamPagina}
                 ";
                 using (MySqlCommand command = new MySqlCommand(sql, connection))
                 {
                     command.CommandType = CommandType.Text;
+                    if (!string.IsNullOrEmpty(estado))
+                        command.Parameters.AddWithValue("@estado", estado);
+                    if (idPropietario.HasValue)
+                        command.Parameters.AddWithValue("@idPropietario", idPropietario.Value);
                     connection.Open();
                     var reader = command.ExecuteReader();
                     while (reader.Read())
@@ -145,13 +157,28 @@ namespace inmobiliariaFUNES.Models
 
         public int ObtenerCantidad()
         {
+            return ObtenerCantidad(null, null);
+        }
+
+        public int ObtenerCantidad(string? estado, int? idPropietario)
+        {
             int res = 0;
             using (MySqlConnection connection = new MySqlConnection(connectionString))
             {
-                string sql = @$"SELECT COUNT({nameof(Inmueble.IdInmueble)}) FROM Inmueble";
+                string filtro = "";
+                if (!string.IsNullOrEmpty(estado))
+                    filtro += " AND Estado = @estado";
+                if (idPropietario.HasValue)
+                    filtro += " AND IdPropietario = @idPropietario";
+
+                string sql = @$"SELECT COUNT({nameof(Inmueble.IdInmueble)}) FROM Inmueble WHERE 1=1 {filtro}";
                 using (MySqlCommand command = new MySqlCommand(sql, connection))
                 {
                     command.CommandType = CommandType.Text;
+                    if (!string.IsNullOrEmpty(estado))
+                        command.Parameters.AddWithValue("@estado", estado);
+                    if (idPropietario.HasValue)
+                        command.Parameters.AddWithValue("@idPropietario", idPropietario.Value);
                     connection.Open();
                     res = Convert.ToInt32(command.ExecuteScalar());
                     connection.Close();
@@ -274,6 +301,125 @@ namespace inmobiliariaFUNES.Models
                             Url = reader.GetString(reader.GetOrdinal(nameof(ImagenInmueble.Url))),
                             EsPortada = reader.GetBoolean(reader.GetOrdinal(nameof(ImagenInmueble.EsPortada))),
                         });
+                    }
+                    connection.Close();
+                }
+            }
+            return res;
+        }
+        public IList<Inmueble> ObtenerMasReservados(int dias)
+        {
+            List<Inmueble> res = new List<Inmueble>();
+            using (MySqlConnection connection = new MySqlConnection(connectionString))
+            {
+                // Cuenta cuántas reservas tuvo cada inmueble en los últimos "dias" días,
+                // y los ordena de más a menos reservado.
+                string sql = @$"
+                    SELECT i.{nameof(Inmueble.IdInmueble)}, i.{nameof(Inmueble.Direccion)}, i.{nameof(Inmueble.Cupo)},
+                        i.{nameof(Inmueble.PrecioPorDia)}, i.{nameof(Inmueble.PorcentajeReserva)}, i.{nameof(Inmueble.Latitud)}, i.{nameof(Inmueble.Longitud)},
+                        i.{nameof(Inmueble.IdPropietario)}, i.{nameof(Inmueble.IdTipoInmueble)}, i.{nameof(Inmueble.Estado)},
+                        p.{nameof(Propietario.Nombre)} AS PropietarioNombre, p.{nameof(Propietario.Apellido)} AS PropietarioApellido,
+                        t.{nameof(TipoInmueble.Nombre)} AS TipoNombre,
+                        COUNT(r.{nameof(Reserva.IdReserva)}) AS CantidadReservas
+                    FROM Inmueble i
+                    INNER JOIN Propietario p ON i.{nameof(Inmueble.IdPropietario)} = p.{nameof(Propietario.IdPropietario)}
+                    INNER JOIN TipoInmueble t ON i.{nameof(Inmueble.IdTipoInmueble)} = t.{nameof(TipoInmueble.IdTipoInmueble)}
+                    INNER JOIN Reserva r ON r.{nameof(Reserva.IdInmueble)} = i.{nameof(Inmueble.IdInmueble)}
+                        AND r.{nameof(Reserva.FechaDesde)} >= @fechaLimite
+                    GROUP BY i.{nameof(Inmueble.IdInmueble)}
+                    ORDER BY CantidadReservas DESC
+                    LIMIT 20
+                ";
+                using (MySqlCommand command = new MySqlCommand(sql, connection))
+                {
+                    command.CommandType = CommandType.Text;
+                    command.Parameters.AddWithValue("@fechaLimite", DateTime.Today.AddDays(-dias));
+                    connection.Open();
+                    var reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        var inmueble = MapearInmueble(reader);
+                        inmueble.CantidadReservas = reader.GetInt32(reader.GetOrdinal("CantidadReservas"));
+                        res.Add(inmueble);
+                    }
+                    connection.Close();
+                }
+            }
+            return res;
+        }
+
+        public IList<Inmueble> ObtenerSinReservas(int dias)
+        {
+            List<Inmueble> res = new List<Inmueble>();
+            using (MySqlConnection connection = new MySqlConnection(connectionString))
+            {
+                // Inmuebles que NO tienen ninguna reserva con FechaDesde
+                // dentro de los últimos "dias" días.
+                string sql = @$"
+                    SELECT i.{nameof(Inmueble.IdInmueble)}, i.{nameof(Inmueble.Direccion)}, i.{nameof(Inmueble.Cupo)},
+                        i.{nameof(Inmueble.PrecioPorDia)}, i.{nameof(Inmueble.PorcentajeReserva)}, i.{nameof(Inmueble.Latitud)}, i.{nameof(Inmueble.Longitud)},
+                        i.{nameof(Inmueble.IdPropietario)}, i.{nameof(Inmueble.IdTipoInmueble)}, i.{nameof(Inmueble.Estado)},
+                        p.{nameof(Propietario.Nombre)} AS PropietarioNombre, p.{nameof(Propietario.Apellido)} AS PropietarioApellido,
+                        t.{nameof(TipoInmueble.Nombre)} AS TipoNombre
+                    FROM Inmueble i
+                    INNER JOIN Propietario p ON i.{nameof(Inmueble.IdPropietario)} = p.{nameof(Propietario.IdPropietario)}
+                    INNER JOIN TipoInmueble t ON i.{nameof(Inmueble.IdTipoInmueble)} = t.{nameof(TipoInmueble.IdTipoInmueble)}
+                    WHERE i.{nameof(Inmueble.IdInmueble)} NOT IN (
+                        SELECT {nameof(Reserva.IdInmueble)} FROM Reserva WHERE {nameof(Reserva.FechaDesde)} >= @fechaLimite
+                    )
+                    ORDER BY i.{nameof(Inmueble.IdInmueble)}
+                ";
+                using (MySqlCommand command = new MySqlCommand(sql, connection))
+                {
+                    command.CommandType = CommandType.Text;
+                    command.Parameters.AddWithValue("@fechaLimite", DateTime.Today.AddDays(-dias));
+                    connection.Open();
+                    var reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        res.Add(MapearInmueble(reader));
+                    }
+                    connection.Close();
+                }
+            }
+            return res;
+        }
+
+        public IList<Inmueble> ObtenerDisponiblesEntreFechas(DateTime fechaDesde, DateTime fechaHasta)
+        {
+            List<Inmueble> res = new List<Inmueble>();
+            using (MySqlConnection connection = new MySqlConnection(connectionString))
+            {
+                // Inmuebles Disponibles que NO tienen ninguna reserva que se
+                // superponga con el rango de fechas pedido.
+                string sql = @$"
+                    SELECT i.{nameof(Inmueble.IdInmueble)}, i.{nameof(Inmueble.Direccion)}, i.{nameof(Inmueble.Cupo)},
+                        i.{nameof(Inmueble.PrecioPorDia)}, i.{nameof(Inmueble.PorcentajeReserva)}, i.{nameof(Inmueble.Latitud)}, i.{nameof(Inmueble.Longitud)},
+                        i.{nameof(Inmueble.IdPropietario)}, i.{nameof(Inmueble.IdTipoInmueble)}, i.{nameof(Inmueble.Estado)},
+                        p.{nameof(Propietario.Nombre)} AS PropietarioNombre, p.{nameof(Propietario.Apellido)} AS PropietarioApellido,
+                        t.{nameof(TipoInmueble.Nombre)} AS TipoNombre
+                    FROM Inmueble i
+                    INNER JOIN Propietario p ON i.{nameof(Inmueble.IdPropietario)} = p.{nameof(Propietario.IdPropietario)}
+                    INNER JOIN TipoInmueble t ON i.{nameof(Inmueble.IdTipoInmueble)} = t.{nameof(TipoInmueble.IdTipoInmueble)}
+                    WHERE i.{nameof(Inmueble.Estado)} = 'Disponible'
+                        AND i.{nameof(Inmueble.IdInmueble)} NOT IN (
+                            SELECT {nameof(Reserva.IdInmueble)} FROM Reserva
+                            WHERE {nameof(Reserva.Estado)} NOT IN ('Terminada anticipadamente', 'Cancelada')
+                                AND {nameof(Reserva.FechaDesde)} <= @fechaHasta
+                                AND {nameof(Reserva.FechaHastaOriginal)} >= @fechaDesde
+                        )
+                    ORDER BY i.{nameof(Inmueble.IdInmueble)}
+                ";
+                using (MySqlCommand command = new MySqlCommand(sql, connection))
+                {
+                    command.CommandType = CommandType.Text;
+                    command.Parameters.AddWithValue("@fechaDesde", fechaDesde.Date);
+                    command.Parameters.AddWithValue("@fechaHasta", fechaHasta.Date);
+                    connection.Open();
+                    var reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        res.Add(MapearInmueble(reader));
                     }
                     connection.Close();
                 }

@@ -122,9 +122,16 @@ namespace inmobiliariaFUNES.Models
 
         public IList<Reserva> ObtenerLista(int paginaNro = 1, int tamPagina = 10)
         {
+            return ObtenerLista(paginaNro, tamPagina, null);
+        }
+
+        public IList<Reserva> ObtenerLista(int paginaNro, int tamPagina, string? estado)
+        {
             IList<Reserva> res = new List<Reserva>();
             using (MySqlConnection connection = new MySqlConnection(connectionString))
             {
+                string filtro = string.IsNullOrEmpty(estado) ? "" : $" AND r.{nameof(Reserva.Estado)} = @estado";
+
                 string sql = @$"
                     SELECT r.{nameof(Reserva.IdReserva)}, r.{nameof(Reserva.IdInquilino)}, r.{nameof(Reserva.IdInmueble)},
                         r.{nameof(Reserva.MontoPorDia)}, r.{nameof(Reserva.FechaDesde)}, r.{nameof(Reserva.FechaHastaOriginal)},
@@ -134,12 +141,15 @@ namespace inmobiliariaFUNES.Models
                     FROM Reserva r
                     INNER JOIN Inquilino iq ON r.{nameof(Reserva.IdInquilino)} = iq.{nameof(Inquilino.IdInquilino)}
                     INNER JOIN Inmueble im ON r.{nameof(Reserva.IdInmueble)} = im.{nameof(Inmueble.IdInmueble)}
+                    WHERE 1=1 {filtro}
                     ORDER BY r.{nameof(Reserva.FechaDesde)} DESC
                     LIMIT {tamPagina} OFFSET {(paginaNro - 1) * tamPagina}
                 ";
                 using (MySqlCommand command = new MySqlCommand(sql, connection))
                 {
                     command.CommandType = CommandType.Text;
+                    if (!string.IsNullOrEmpty(estado))
+                        command.Parameters.AddWithValue("@estado", estado);
                     connection.Open();
                     var reader = command.ExecuteReader();
                     while (reader.Read())
@@ -154,13 +164,21 @@ namespace inmobiliariaFUNES.Models
 
         public int ObtenerCantidad()
         {
+            return ObtenerCantidad(null);
+        }
+
+        public int ObtenerCantidad(string? estado)
+        {
             int res = 0;
             using (MySqlConnection connection = new MySqlConnection(connectionString))
             {
-                string sql = @$"SELECT COUNT({nameof(Reserva.IdReserva)}) FROM Reserva";
+                string filtro = string.IsNullOrEmpty(estado) ? "" : " AND Estado = @estado";
+                string sql = @$"SELECT COUNT({nameof(Reserva.IdReserva)}) FROM Reserva WHERE 1=1 {filtro}";
                 using (MySqlCommand command = new MySqlCommand(sql, connection))
                 {
                     command.CommandType = CommandType.Text;
+                    if (!string.IsNullOrEmpty(estado))
+                        command.Parameters.AddWithValue("@estado", estado);
                     connection.Open();
                     res = Convert.ToInt32(command.ExecuteScalar());
                     connection.Close();
@@ -218,6 +236,41 @@ namespace inmobiliariaFUNES.Models
                     command.Parameters.AddWithValue("@id", r.IdReserva);
                     connection.Open();
                     res = command.ExecuteNonQuery();
+                    connection.Close();
+                }
+            }
+            return res;
+        }
+
+        public IList<Reserva> ObtenerQueTerminanEn(int dias)
+        {
+            List<Reserva> res = new List<Reserva>();
+            using (MySqlConnection connection = new MySqlConnection(connectionString))
+            {
+                string sql = @$"
+                    SELECT r.{nameof(Reserva.IdReserva)}, r.{nameof(Reserva.IdInquilino)}, r.{nameof(Reserva.IdInmueble)},
+                        r.{nameof(Reserva.MontoPorDia)}, r.{nameof(Reserva.FechaDesde)}, r.{nameof(Reserva.FechaHastaOriginal)},
+                        r.{nameof(Reserva.FechaTerminacion)}, r.{nameof(Reserva.Multa)}, r.{nameof(Reserva.Estado)},
+                        iq.{nameof(Inquilino.Nombre)} AS InquilinoNombre, iq.{nameof(Inquilino.Apellido)} AS InquilinoApellido,
+                        im.{nameof(Inmueble.Direccion)} AS InmuebleDireccion
+                    FROM Reserva r
+                    INNER JOIN Inquilino iq ON r.{nameof(Reserva.IdInquilino)} = iq.{nameof(Inquilino.IdInquilino)}
+                    INNER JOIN Inmueble im ON r.{nameof(Reserva.IdInmueble)} = im.{nameof(Inmueble.IdInmueble)}
+                    WHERE r.{nameof(Reserva.Estado)} = 'Vigente'
+                        AND r.{nameof(Reserva.FechaHastaOriginal)} BETWEEN @hoy AND @fechaLimite
+                    ORDER BY r.{nameof(Reserva.FechaHastaOriginal)}
+                ";
+                using (MySqlCommand command = new MySqlCommand(sql, connection))
+                {
+                    command.CommandType = CommandType.Text;
+                    command.Parameters.AddWithValue("@hoy", DateTime.Today);
+                    command.Parameters.AddWithValue("@fechaLimite", DateTime.Today.AddDays(dias));
+                    connection.Open();
+                    var reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        res.Add(MapearReserva(reader));
+                    }
                     connection.Close();
                 }
             }

@@ -47,6 +47,9 @@
     }
 </div>
 
-<div class="mt-6">
+<div class="mt-6 flex items-center justify-between">
     <a asp-action="Index" class="text-sm text-indigo-600 hover:text-indigo-800">&larr; Volver al listado</a>
+    <a asp-controller="Pagos" asp-action="Index" asp-route-idReserva="@Model.IdReserva" class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">
+        Ver pagos de esta reserva
+    </a>
 </div>

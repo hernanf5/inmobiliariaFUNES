@@ -1,0 +1,24 @@
+@{
+    ViewData["Title"] = "Reportes";
+}
+
+<h1 class="text-2xl font-semibold text-gray-900 mb-6">Reportes</h1>
+
+<div class="grid grid-cols-2 gap-4 max-w-2xl">
+    <a asp-action="MasReservados" class="bg-white border border-gray-200 rounded-lg p-4 hover:border-indigo-300 hover:shadow-sm">
+        <h2 class="font-medium text-gray-900 mb-1">Inmuebles más reservados</h2>
+        <p class="text-sm text-gray-600">Ranking de los últimos 365 días</p>
+    </a>
+    <a asp-action="SinReservas" class="bg-white border border-gray-200 rounded-lg p-4 hover:border-indigo-300 hover:shadow-sm">
+        <h2 class="font-medium text-gray-900 mb-1">Inmuebles sin reservas</h2>
+        <p class="text-sm text-gray-600">En los últimos 60 días</p>
+    </a>
+    <a asp-action="TerminanPronto" class="bg-white border border-gray-200 rounded-lg p-4 hover:border-indigo-300 hover:shadow-sm">
+        <h2 class="font-medium text-gray-900 mb-1">Reservas por terminar</h2>
+        <p class="text-sm text-gray-600">En los próximos 7 días</p>
+    </a>
+    <a asp-action="Disponibilidad" class="bg-white border border-gray-200 rounded-lg p-4 hover:border-indigo-300 hover:shadow-sm">
+        <h2 class="font-medium text-gray-900 mb-1">Disponibilidad</h2>
+        <p class="text-sm text-gray-600">Inmuebles libres entre dos fechas</p>
+    </a>
+</div>
