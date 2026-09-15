@@ -26,14 +26,15 @@ namespace inmobiliariaFUNES.Controllers
 
         // GET: Reservas
         [Route("[controller]/Index")]
-        public ActionResult Index(int pagina = 1)
+        public ActionResult Index(int pagina = 1, string? estado = null)
         {
             try
             {
                 var tamaño = 10;
-                var lista = repositorio.ObtenerLista(Math.Max(pagina, 1), tamaño);
+                var lista = repositorio.ObtenerLista(Math.Max(pagina, 1), tamaño, estado);
                 ViewBag.Pagina = pagina;
-                var total = repositorio.ObtenerCantidad();
+                ViewBag.EstadoFiltro = estado;
+                var total = repositorio.ObtenerCantidad(estado);
                 ViewBag.TotalPaginas = total % tamaño == 0 ? total / tamaño : total / tamaño + 1;
                 ViewBag.Id = TempData["Id"];
                 if (TempData.ContainsKey("Mensaje"))
@@ -326,6 +327,98 @@ namespace inmobiliariaFUNES.Controllers
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error en Terminar");
+                throw;
+            }
+        }
+
+        // GET: Reservas/Renovar/5
+        public ActionResult Renovar(int id)
+        {
+            try
+            {
+                var original = repositorio.ObtenerPorId(id);
+                if (original == null)
+                    return NotFound();
+                if (original.Estado != "Vigente" && original.Estado != "Finalizada")
+                {
+                    TempData["Error"] = "Solo se pueden renovar reservas vigentes o finalizadas.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                var nueva = new Reserva
+                {
+                    IdInquilino = original.IdInquilino,
+                    IdInmueble = original.IdInmueble,
+                    IdReservaOrigen = original.IdReserva,
+                    MontoPorDia = original.MontoPorDia,
+                    FechaDesde = original.FechaHastaOriginal.AddDays(1),
+                    FechaHastaOriginal = original.FechaHastaOriginal.AddDays(1),
+                };
+                ViewBag.ReservaOrigen = original;
+                return View(nueva);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error en Renovar");
+                throw;
+            }
+        }
+
+        // POST: Reservas/Renovar/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Renovar(int id, Reserva reserva)
+        {
+            try
+            {
+                var original = repositorio.ObtenerPorId(id);
+                if (original == null)
+                    return NotFound();
+                if (original.Estado != "Vigente" && original.Estado != "Finalizada")
+                {
+                    TempData["Error"] = "Solo se pueden renovar reservas vigentes o finalizadas.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                if (reserva.FechaHastaOriginal <= reserva.FechaDesde)
+                {
+                    ModelState.AddModelError(nameof(Reserva.FechaHastaOriginal), "La fecha hasta debe ser posterior a la fecha desde.");
+                }
+
+                if (!ModelState.IsValid)
+                {
+                    ViewBag.ReservaOrigen = original;
+                    return View(reserva);
+                }
+
+                var nueva = new Reserva
+                {
+                    IdInquilino = original.IdInquilino,
+                    IdInmueble = original.IdInmueble,
+                    IdReservaOrigen = original.IdReserva,
+                    MontoPorDia = reserva.MontoPorDia,
+                    FechaDesde = reserva.FechaDesde,
+                    FechaHastaOriginal = reserva.FechaHastaOriginal,
+                };
+
+                try
+                {
+                    repositorio.Alta(nueva);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    ModelState.AddModelError(string.Empty, ex.Message);
+                    ViewBag.ReservaOrigen = original;
+                    return View(reserva);
+                }
+
+                TempData["Id"] = nueva.IdReserva;
+                TempData["Mensaje"] = $"Reserva renovada correctamente (nueva reserva #{nueva.IdReserva})";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error en Renovar");
                 throw;
             }
         }
