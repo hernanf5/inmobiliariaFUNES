@@ -6,9 +6,14 @@
 
 <div class="flex items-center justify-between mb-4">
     <h1 class="text-2xl font-semibold text-gray-900">Reservas</h1>
-    <a asp-action="Create" class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">
-        + Nueva reserva
-    </a>
+    <div class="flex gap-2">
+        <a asp-action="BuscarInmueble" class="inline-flex items-center rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+            Buscar inmueble disponible
+        </a>
+        <a asp-action="Create" class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">
+            + Nueva reserva
+        </a>
+    </div>
 </div>
 
 <div class="mb-6 flex gap-2">

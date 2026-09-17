@@ -88,13 +88,49 @@ namespace inmobiliariaFUNES.Controllers
             }
         }
 
-        // GET: Reservas/Create
-        public ActionResult Create()
+        // GET: Reservas/BuscarInmueble
+        public ActionResult BuscarInmueble(DateTime? fechaDesde, DateTime? fechaHasta)
         {
             try
             {
-                CargarListasDesplegables();
+                if (fechaDesde.HasValue && fechaHasta.HasValue)
+                {
+                    if (fechaHasta.Value <= fechaDesde.Value)
+                    {
+                        ModelState.AddModelError(string.Empty, "La fecha hasta debe ser posterior a la fecha desde.");
+                    }
+                    else
+                    {
+                        ViewBag.Resultados = repositorioInmueble.ObtenerDisponiblesEntreFechas(fechaDesde.Value, fechaHasta.Value);
+                    }
+                    ViewBag.FechaDesde = fechaDesde.Value;
+                    ViewBag.FechaHasta = fechaHasta.Value;
+                }
                 return View();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error en BuscarInmueble");
+                throw;
+            }
+        }
+        // GET: Reservas/Create
+        public ActionResult Create(int? idInmueble, DateTime? fechaDesde, DateTime? fechaHasta, decimal? montoPorDia)
+        {
+            try
+            {
+                var reserva = new Reserva();
+                if (idInmueble.HasValue)
+                    reserva.IdInmueble = idInmueble.Value;
+                if (fechaDesde.HasValue)
+                    reserva.FechaDesde = fechaDesde.Value;
+                if (fechaHasta.HasValue)
+                    reserva.FechaHastaOriginal = fechaHasta.Value;
+                if (montoPorDia.HasValue)
+                    reserva.MontoPorDia = montoPorDia.Value;
+
+                CargarListasDesplegables(null, idInmueble);
+                return View(reserva);
             }
             catch (Exception ex)
             {

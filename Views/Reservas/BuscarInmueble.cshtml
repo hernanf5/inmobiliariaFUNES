@@ -1,0 +1,73 @@
+@model object
+@using inmobiliariaFUNES.Models
+
+@{
+    ViewData["Title"] = "Buscar inmueble disponible";
+}
+
+<h1 class="text-2xl font-semibold text-gray-900 mb-6">Buscar inmueble disponible</h1>
+
+<div class="bg-white border border-gray-200 rounded-lg p-6 max-w-xl mb-6">
+    <form asp-action="BuscarInmueble" method="get">
+        <div asp-validation-summary="ModelOnly" class="mb-4 text-sm text-red-600"></div>
+        <div class="grid grid-cols-2 gap-4 mb-4">
+            <div>
+                <label for="fechaDesde" class="block text-sm font-medium text-gray-700 mb-1">Fecha desde</label>
+                <input type="date" id="fechaDesde" name="fechaDesde" value="@(ViewBag.FechaDesde as DateTime? )?.ToString("yyyy-MM-dd")"
+                        class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" required />
+            </div>
+            <div>
+                <label for="fechaHasta" class="block text-sm font-medium text-gray-700 mb-1">Fecha hasta</label>
+                <input type="date" id="fechaHasta" name="fechaHasta" value="@(ViewBag.FechaHasta as DateTime? )?.ToString("yyyy-MM-dd")"
+                        class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" required />
+            </div>
+        </div>
+        <button type="submit" class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">
+            Buscar
+        </button>
+    </form>
+</div>
+
+@if (ViewBag.Resultados != null)
+{
+    var resultados = (IList<Inmueble>)ViewBag.Resultados;
+    var fechaDesdeStr = ((DateTime)ViewBag.FechaDesde).ToString("yyyy-MM-dd");
+    var fechaHastaStr = ((DateTime)ViewBag.FechaHasta).ToString("yyyy-MM-dd");
+    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dirección</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cupo</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio/día</th>
+                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                @if (!resultados.Any())
+                {
+                    <tr>
+                        <td colspan="5" class="px-4 py-8 text-center text-sm text-gray-500">
+                            No hay inmuebles disponibles en ese rango de fechas.
+                        </td>
+                    </tr>
+                }
+                @foreach (var i in resultados)
+                {
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3 text-sm text-gray-900">@i.Direccion</td>
+                        <td class="px-4 py-3 text-sm text-gray-600">@i.TipoInmueble?.Nombre</td>
+                        <td class="px-4 py-3 text-sm text-gray-600">@i.Cupo personas</td>
+                        <td class="px-4 py-3 text-sm text-gray-600">$@i.PrecioPorDia.ToString("N2")</td>
+                        <td class="px-4 py-3 text-sm text-right">
+                            <a asp-action="Create" asp-route-idInmueble="@i.IdInmueble" asp-route-fechaDesde="@fechaDesdeStr" asp-route-fechaHasta="@fechaHastaStr" asp-route-montoPorDia="@i.PrecioPorDia"                                class="rounded-md bg-indigo-600 px-3 py-1.5 text-white hover:bg-indigo-700">
+                                Reservar
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
