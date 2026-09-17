@@ -426,7 +426,39 @@ namespace inmobiliariaFUNES.Models
             }
             return res;
         }
-
+        public IList<Inmueble> BuscarPorDireccion(string direccion)
+        {
+            List<Inmueble> res = new List<Inmueble>();
+            direccion = "%" + direccion + "%";
+            using (MySqlConnection connection = new MySqlConnection(connectionString))
+            {
+                string sql = @$"
+                    SELECT i.{nameof(Inmueble.IdInmueble)}, i.{nameof(Inmueble.Direccion)}, i.{nameof(Inmueble.Cupo)},
+                        i.{nameof(Inmueble.PrecioPorDia)}, i.{nameof(Inmueble.PorcentajeReserva)}, i.{nameof(Inmueble.Latitud)}, i.{nameof(Inmueble.Longitud)},
+                        i.{nameof(Inmueble.IdPropietario)}, i.{nameof(Inmueble.IdTipoInmueble)}, i.{nameof(Inmueble.Estado)},
+                        p.{nameof(Propietario.Nombre)} AS PropietarioNombre, p.{nameof(Propietario.Apellido)} AS PropietarioApellido,
+                        t.{nameof(TipoInmueble.Nombre)} AS TipoNombre
+                    FROM Inmueble i
+                    INNER JOIN Propietario p ON i.{nameof(Inmueble.IdPropietario)} = p.{nameof(Propietario.IdPropietario)}
+                    INNER JOIN TipoInmueble t ON i.{nameof(Inmueble.IdTipoInmueble)} = t.{nameof(TipoInmueble.IdTipoInmueble)}
+                    WHERE i.{nameof(Inmueble.Direccion)} LIKE @direccion
+                    LIMIT 10
+                ";
+                using (MySqlCommand command = new MySqlCommand(sql, connection))
+                {
+                    command.Parameters.AddWithValue("@direccion", direccion);
+                    command.CommandType = CommandType.Text;
+                    connection.Open();
+                    var reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        res.Add(MapearInmueble(reader));
+                    }
+                    connection.Close();
+                }
+            }
+            return res;
+        }
         private static Inmueble MapearInmueble(MySqlDataReader reader)
         {
             return new Inmueble

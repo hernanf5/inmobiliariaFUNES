@@ -45,5 +45,8 @@ namespace inmobiliariaFUNES.Models
         // Navegación: se completan con JOIN en el repositorio.
         public Inquilino? Inquilino { get; set; }
         public Inmueble? Inmueble { get; set; }
+
+        public string? NombreUsuarioCreador { get; set; }
+        public string? NombreUsuarioTerminador { get; set; }
     }
 }

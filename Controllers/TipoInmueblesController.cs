@@ -1,9 +1,11 @@
 using System;
 using inmobiliariaFUNES.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace inmobiliariaFUNES.Controllers
 {
+    [Authorize]
     public class TipoInmueblesController : Controller
     {
         private readonly IRepositorioTipoInmueble repositorio;
@@ -137,6 +139,7 @@ namespace inmobiliariaFUNES.Controllers
         }
 
         // GET: TipoInmuebles/Eliminar/5
+        [Authorize(Policy = "Administrador")]
         public ActionResult Eliminar(int id)
         {
             try
@@ -156,6 +159,7 @@ namespace inmobiliariaFUNES.Controllers
         // POST: TipoInmuebles/Eliminar/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "Administrador")]
         public ActionResult Eliminar(int id, TipoInmueble entidad)
         {
             try

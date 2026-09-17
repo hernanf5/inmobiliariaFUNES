@@ -151,6 +151,33 @@ namespace inmobiliariaFUNES.Models
             return i;
         }
 
+        public IList<Inquilino> BuscarPorNombre(string nombre)
+        {
+            List<Inquilino> res = new List<Inquilino>();
+            nombre = "%" + nombre + "%";
+            using (MySqlConnection connection = new MySqlConnection(connectionString))
+            {
+                string sql = @$"SELECT {nameof(Inquilino.IdInquilino)}, {nameof(Inquilino.Dni)}, {nameof(Inquilino.Nombre)}, {nameof(Inquilino.Apellido)}, {nameof(Inquilino.Telefono)}, {nameof(Inquilino.Email)}, {nameof(Inquilino.Activo)}
+                    FROM Inquilino
+                    WHERE ({nameof(Inquilino.Nombre)} LIKE @nombre OR {nameof(Inquilino.Apellido)} LIKE @nombre)
+                        AND {nameof(Inquilino.Activo)} = 1
+                    LIMIT 10";
+                using (MySqlCommand command = new MySqlCommand(sql, connection))
+                {
+                    command.Parameters.AddWithValue("@nombre", nombre);
+                    command.CommandType = CommandType.Text;
+                    connection.Open();
+                    var reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        res.Add(MapearInquilino(reader));
+                    }
+                    connection.Close();
+                }
+            }
+            return res;
+        }
+
         private static Inquilino MapearInquilino(MySqlDataReader reader)
         {
             return new Inquilino

@@ -50,8 +50,8 @@ namespace inmobiliariaFUNES.Models
             using (MySqlConnection connection = new MySqlConnection(connectionString))
             {
                 string sql = @$"INSERT INTO Reserva
-                    ({nameof(Reserva.IdInquilino)}, {nameof(Reserva.IdInmueble)}, {nameof(Reserva.MontoPorDia)}, {nameof(Reserva.FechaDesde)}, {nameof(Reserva.FechaHastaOriginal)}, {nameof(Reserva.Estado)})
-                    VALUES (@idInquilino, @idInmueble, @montoPorDia, @fechaDesde, @fechaHastaOriginal, @estado);
+                    ({nameof(Reserva.IdInquilino)}, {nameof(Reserva.IdInmueble)}, {nameof(Reserva.MontoPorDia)}, {nameof(Reserva.FechaDesde)}, {nameof(Reserva.FechaHastaOriginal)}, {nameof(Reserva.Estado)}, {nameof(Reserva.IdUsuarioCreador)})
+                    VALUES (@idInquilino, @idInmueble, @montoPorDia, @fechaDesde, @fechaHastaOriginal, @estado, @idUsuarioCreador);
                     SELECT LAST_INSERT_ID();";
                 using (MySqlCommand command = new MySqlCommand(sql, connection))
                 {
@@ -62,6 +62,7 @@ namespace inmobiliariaFUNES.Models
                     command.Parameters.AddWithValue("@fechaDesde", r.FechaDesde.Date);
                     command.Parameters.AddWithValue("@fechaHastaOriginal", r.FechaHastaOriginal.Date);
                     command.Parameters.AddWithValue("@estado", "Vigente");
+                    command.Parameters.AddWithValue("@idUsuarioCreador", (object?)r.IdUsuarioCreador ?? DBNull.Value);
                     connection.Open();
                     res = Convert.ToInt32(command.ExecuteScalar());
                     r.IdReserva = res;
@@ -196,11 +197,16 @@ namespace inmobiliariaFUNES.Models
                     SELECT r.{nameof(Reserva.IdReserva)}, r.{nameof(Reserva.IdInquilino)}, r.{nameof(Reserva.IdInmueble)},
                         r.{nameof(Reserva.MontoPorDia)}, r.{nameof(Reserva.FechaDesde)}, r.{nameof(Reserva.FechaHastaOriginal)},
                         r.{nameof(Reserva.FechaTerminacion)}, r.{nameof(Reserva.Multa)}, r.{nameof(Reserva.Estado)},
+                        r.{nameof(Reserva.IdUsuarioCreador)}, r.{nameof(Reserva.IdUsuarioTerminador)},
                         iq.{nameof(Inquilino.Nombre)} AS InquilinoNombre, iq.{nameof(Inquilino.Apellido)} AS InquilinoApellido,
-                        im.{nameof(Inmueble.Direccion)} AS InmuebleDireccion
+                        im.{nameof(Inmueble.Direccion)} AS InmuebleDireccion,
+                        uc.{nameof(Usuario.Nombre)} AS UsuarioCreadorNombre,
+                        ut.{nameof(Usuario.Nombre)} AS UsuarioTerminadorNombre
                     FROM Reserva r
                     INNER JOIN Inquilino iq ON r.{nameof(Reserva.IdInquilino)} = iq.{nameof(Inquilino.IdInquilino)}
                     INNER JOIN Inmueble im ON r.{nameof(Reserva.IdInmueble)} = im.{nameof(Inmueble.IdInmueble)}
+                    LEFT JOIN Usuario uc ON r.{nameof(Reserva.IdUsuarioCreador)} = uc.{nameof(Usuario.IdUsuario)}
+                    LEFT JOIN Usuario ut ON r.{nameof(Reserva.IdUsuarioTerminador)} = ut.{nameof(Usuario.IdUsuario)}
                     WHERE r.{nameof(Reserva.IdReserva)} = @id";
                 using (MySqlCommand command = new MySqlCommand(sql, connection))
                 {
@@ -226,13 +232,15 @@ namespace inmobiliariaFUNES.Models
                 string sql = @$"UPDATE Reserva
                     SET {nameof(Reserva.Estado)} = 'Terminada anticipadamente',
                         {nameof(Reserva.FechaTerminacion)} = @fechaTerminacion,
-                        {nameof(Reserva.Multa)} = @multa
+                        {nameof(Reserva.Multa)} = @multa,
+                        {nameof(Reserva.IdUsuarioTerminador)} = @idUsuarioTerminador
                     WHERE {nameof(Reserva.IdReserva)} = @id";
                 using (MySqlCommand command = new MySqlCommand(sql, connection))
                 {
                     command.CommandType = CommandType.Text;
                     command.Parameters.AddWithValue("@fechaTerminacion", fechaTerminacion.Date);
                     command.Parameters.AddWithValue("@multa", multa);
+                    command.Parameters.AddWithValue("@idUsuarioTerminador", (object?)r.IdUsuarioTerminador ?? DBNull.Value);
                     command.Parameters.AddWithValue("@id", r.IdReserva);
                     connection.Open();
                     res = command.ExecuteNonQuery();
@@ -279,7 +287,7 @@ namespace inmobiliariaFUNES.Models
 
         private static Reserva MapearReserva(MySqlDataReader reader)
         {
-            return new Reserva
+            var reserva = new Reserva
             {
                 IdReserva = reader.GetInt32(reader.GetOrdinal(nameof(Reserva.IdReserva))),
                 IdInquilino = reader.GetInt32(reader.GetOrdinal(nameof(Reserva.IdInquilino))),
@@ -302,6 +310,20 @@ namespace inmobiliariaFUNES.Models
                     Direccion = reader.GetString(reader.GetOrdinal("InmuebleDireccion")),
                 },
             };
+
+            for (int i = 0; i < reader.FieldCount; i++)
+            {
+                if (reader.GetName(i) == "UsuarioCreadorNombre")
+                {
+                    reserva.IdUsuarioCreador = reader.IsDBNull(reader.GetOrdinal(nameof(Reserva.IdUsuarioCreador))) ? null : reader.GetInt32(reader.GetOrdinal(nameof(Reserva.IdUsuarioCreador)));
+                    reserva.IdUsuarioTerminador = reader.IsDBNull(reader.GetOrdinal(nameof(Reserva.IdUsuarioTerminador))) ? null : reader.GetInt32(reader.GetOrdinal(nameof(Reserva.IdUsuarioTerminador)));
+                    reserva.NombreUsuarioCreador = reader.IsDBNull(i) ? null : reader.GetString(i);
+                    reserva.NombreUsuarioTerminador = reader.IsDBNull(reader.GetOrdinal("UsuarioTerminadorNombre")) ? null : reader.GetString(reader.GetOrdinal("UsuarioTerminadorNombre"));
+                    break;
+                }
+            }
+
+            return reserva;
         }
     }
 }

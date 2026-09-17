@@ -47,6 +47,18 @@
     }
 </div>
 
+@if (User.IsInRole("Administrador"))
+{
+    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 max-w-xl mt-4">
+        <p class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Auditoría</p>
+        <p class="text-sm text-gray-600">Creado por: @(Model.NombreUsuarioCreador ?? "—")</p>
+        @if (Model.NombreUsuarioTerminador != null)
+        {
+            <p class="text-sm text-gray-600">Terminado por: @Model.NombreUsuarioTerminador</p>
+        }
+    </div>
+}
+
 <div class="mt-6 flex items-center justify-between">
     <a asp-action="Index" class="text-sm text-indigo-600 hover:text-indigo-800">&larr; Volver al listado</a>
     <a asp-controller="Pagos" asp-action="Index" asp-route-idReserva="@Model.IdReserva" class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">

@@ -1,9 +1,12 @@
 using System;
 using inmobiliariaFUNES.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using System.Linq;
 
 namespace inmobiliariaFUNES.Controllers
 {
+    [Authorize]
     public class InquilinosController : Controller
     {
         private readonly IRepositorioInquilino repositorio;
@@ -68,7 +71,20 @@ namespace inmobiliariaFUNES.Controllers
                 return BadRequest(ex.Message);
             }
         }
-
+        // GET: Inquilinos/Buscar/q
+        // [Route("[controller]/Buscar/{q}")]
+        public IActionResult Buscar(string q)
+        {
+            try
+            {
+                var res = repositorio.BuscarPorNombre(q);
+                return Json(new { datos = res.Select(i => new { id = i.IdInquilino, texto = i.ToString() }) });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { error = ex.Message });
+            }
+        }
         // GET: Inquilinos/Create
         public ActionResult Create()
         {
@@ -155,6 +171,7 @@ namespace inmobiliariaFUNES.Controllers
         }
 
         // GET: Inquilinos/Eliminar/5
+        [Authorize(Policy = "Administrador")]
         public ActionResult Eliminar(int id)
         {
             try
@@ -174,6 +191,7 @@ namespace inmobiliariaFUNES.Controllers
         // POST: Inquilinos/Eliminar/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "Administrador")]
         public ActionResult Eliminar(int id, Inquilino entidad)
         {
             try

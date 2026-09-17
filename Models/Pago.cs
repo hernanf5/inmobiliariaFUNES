@@ -27,5 +27,8 @@ namespace inmobiliariaFUNES.Models
 
         public int? IdUsuarioCreador { get; set; }
         public int? IdUsuarioAnulador { get; set; }
+
+        public string? NombreUsuarioCreador { get; set; }
+        public string? NombreUsuarioAnulador { get; set; }
     }
 }

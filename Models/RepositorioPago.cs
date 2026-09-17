@@ -106,9 +106,13 @@ namespace inmobiliariaFUNES.Models
             Pago? p = null;
             using (MySqlConnection connection = new MySqlConnection(connectionString))
             {
-                string sql = @$"SELECT {nameof(Pago.IdPago)}, {nameof(Pago.IdReserva)}, {nameof(Pago.Concepto)}, {nameof(Pago.FechaPago)}, {nameof(Pago.Importe)}, {nameof(Pago.Estado)}, {nameof(Pago.IdUsuarioCreador)}, {nameof(Pago.IdUsuarioAnulador)}
-                    FROM Pago
-                    WHERE {nameof(Pago.IdPago)} = @id";
+                string sql = @$"SELECT pg.{nameof(Pago.IdPago)}, pg.{nameof(Pago.IdReserva)}, pg.{nameof(Pago.Concepto)}, pg.{nameof(Pago.FechaPago)}, pg.{nameof(Pago.Importe)}, pg.{nameof(Pago.Estado)}, pg.{nameof(Pago.IdUsuarioCreador)}, pg.{nameof(Pago.IdUsuarioAnulador)},
+                        uc.{nameof(Usuario.Nombre)} AS UsuarioCreadorNombre,
+                        ua.{nameof(Usuario.Nombre)} AS UsuarioAnuladorNombre
+                    FROM Pago pg
+                    LEFT JOIN Usuario uc ON pg.{nameof(Pago.IdUsuarioCreador)} = uc.{nameof(Usuario.IdUsuario)}
+                    LEFT JOIN Usuario ua ON pg.{nameof(Pago.IdUsuarioAnulador)} = ua.{nameof(Usuario.IdUsuario)}
+                    WHERE pg.{nameof(Pago.IdPago)} = @id";
                 using (MySqlCommand command = new MySqlCommand(sql, connection))
                 {
                     command.Parameters.AddWithValue("@id", id);
@@ -170,7 +174,7 @@ namespace inmobiliariaFUNES.Models
 
         private static Pago MapearPago(MySqlDataReader reader)
         {
-            return new Pago
+            var pago = new Pago
             {
                 IdPago = reader.GetInt32(reader.GetOrdinal(nameof(Pago.IdPago))),
                 IdReserva = reader.GetInt32(reader.GetOrdinal(nameof(Pago.IdReserva))),
@@ -181,6 +185,18 @@ namespace inmobiliariaFUNES.Models
                 IdUsuarioCreador = reader.IsDBNull(reader.GetOrdinal(nameof(Pago.IdUsuarioCreador))) ? null : reader.GetInt32(reader.GetOrdinal(nameof(Pago.IdUsuarioCreador))),
                 IdUsuarioAnulador = reader.IsDBNull(reader.GetOrdinal(nameof(Pago.IdUsuarioAnulador))) ? null : reader.GetInt32(reader.GetOrdinal(nameof(Pago.IdUsuarioAnulador))),
             };
+
+            for (int i = 0; i < reader.FieldCount; i++)
+            {
+                if (reader.GetName(i) == "UsuarioCreadorNombre")
+                {
+                    pago.NombreUsuarioCreador = reader.IsDBNull(i) ? null : reader.GetString(i);
+                    pago.NombreUsuarioAnulador = reader.IsDBNull(reader.GetOrdinal("UsuarioAnuladorNombre")) ? null : reader.GetString(reader.GetOrdinal("UsuarioAnuladorNombre"));
+                    break;
+                }
+            }
+
+            return pago;
         }
     }
 }

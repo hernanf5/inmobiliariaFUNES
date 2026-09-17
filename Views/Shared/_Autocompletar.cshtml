@@ -1,0 +1,20 @@
+@{
+    string nombreCampo = (string)ViewData["NombreCampo"]!;
+    string urlBusqueda = (string)ViewData["UrlBusqueda"]!;
+    string etiqueta = (string)ViewData["Etiqueta"]!;
+    int? valorInicial = ViewData["ValorInicial"] as int?;
+    string? textoInicial = ViewData["TextoInicial"] as string;
+}
+
+<div class="mb-4" data-autocompletar>
+    <label class="block text-sm font-medium text-gray-700 mb-1">@etiqueta</label>
+    <input type="text" class="autocompletar-texto w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder="Escribí para buscar..." value="@textoInicial" autocomplete="off" />
+    <input type="hidden" name="@nombreCampo" class="autocompletar-id" value="@valorInicial" />
+    <div class="autocompletar-resultados relative">
+        <ul class="absolute z-10 w-full bg-white border border-gray-200 rounded-md shadow-lg mt-1 hidden max-h-48 overflow-auto"></ul>
+    </div>
+    <span asp-validation-for="@nombreCampo" class="text-sm text-red-600"></span>
+</div>
+
+<script data-autocompletar-config data-url="@urlBusqueda"></script>

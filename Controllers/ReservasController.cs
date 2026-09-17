@@ -2,9 +2,11 @@ using System;
 using inmobiliariaFUNES.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Authorization;
 
 namespace inmobiliariaFUNES.Controllers
 {
+    [Authorize]
     public class ReservasController : Controller
     {
         private readonly IRepositorioReserva repositorio;
@@ -50,13 +52,23 @@ namespace inmobiliariaFUNES.Controllers
             }
         }
 
+        private int ObtenerIdUsuarioLogueado()
+        {
+            var idTexto = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            return int.TryParse(idTexto, out var id) ? id : 0;
+        }
         private void CargarListasDesplegables(int? idInquilinoSeleccionado = null, int? idInmuebleSeleccionado = null)
         {
-            var inquilinos = repositorioInquilino.ObtenerLista(1, int.MaxValue);
-            ViewBag.Inquilinos = new SelectList(inquilinos, nameof(Inquilino.IdInquilino), null, idInquilinoSeleccionado);
-
-            var inmuebles = repositorioInmueble.ObtenerLista(1, int.MaxValue);
-            ViewBag.Inmuebles = new SelectList(inmuebles, nameof(Inmueble.IdInmueble), nameof(Inmueble.Direccion), idInmuebleSeleccionado);
+            if (idInquilinoSeleccionado.HasValue)
+            {
+                var inquilino = repositorioInquilino.ObtenerPorId(idInquilinoSeleccionado.Value);
+                ViewBag.InquilinoSeleccionadoTexto = inquilino?.ToString();
+            }
+            if (idInmuebleSeleccionado.HasValue)
+            {
+                var inmueble = repositorioInmueble.ObtenerPorId(idInmuebleSeleccionado.Value);
+                ViewBag.InmuebleSeleccionadoTexto = inmueble?.Direccion;
+            }
         }
 
         // GET: Reservas/Details/5
@@ -108,7 +120,7 @@ namespace inmobiliariaFUNES.Controllers
                     CargarListasDesplegables(reserva.IdInquilino, reserva.IdInmueble);
                     return View(reserva);
                 }
-
+                reserva.IdUsuarioCreador = ObtenerIdUsuarioLogueado();
                 try
                 {
                     repositorio.Alta(reserva);
@@ -209,6 +221,7 @@ namespace inmobiliariaFUNES.Controllers
         }
 
         // GET: Reservas/Eliminar/5
+        [Authorize(Policy = "Administrador")]
         public ActionResult Eliminar(int id)
         {
             try
@@ -233,6 +246,7 @@ namespace inmobiliariaFUNES.Controllers
         // POST: Reservas/Eliminar/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "Administrador")]
         public ActionResult Eliminar(int id, Reserva entidad)
         {
             try
@@ -319,6 +333,7 @@ namespace inmobiliariaFUNES.Controllers
                 }
 
                 var multa = CalcularMulta(entidad, fechaTerminacion);
+                entidad.IdUsuarioTerminador = ObtenerIdUsuarioLogueado();
                 repositorio.Terminar(entidad, fechaTerminacion, multa);
 
                 TempData["Mensaje"] = $"Reserva terminada anticipadamente. Multa calculada: ${multa:N2}";
@@ -399,6 +414,7 @@ namespace inmobiliariaFUNES.Controllers
                     MontoPorDia = reserva.MontoPorDia,
                     FechaDesde = reserva.FechaDesde,
                     FechaHastaOriginal = reserva.FechaHastaOriginal,
+                    IdUsuarioCreador = ObtenerIdUsuarioLogueado(),
                 };
 
                 try

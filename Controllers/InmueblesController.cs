@@ -5,9 +5,12 @@ using inmobiliariaFUNES.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Authorization;
+using System.Linq;
 
 namespace inmobiliariaFUNES.Controllers
 {
+    [Authorize]
     public class InmueblesController : Controller
     {
         private readonly IRepositorioInmueble repositorio;
@@ -60,7 +63,7 @@ namespace inmobiliariaFUNES.Controllers
             }
         }
 
-                // GET: Inmuebles/Details/5
+        // GET: Inmuebles/Details/5
         public ActionResult Details(int id)
         {
             try
@@ -79,14 +82,31 @@ namespace inmobiliariaFUNES.Controllers
 
         private void CargarListasDesplegables(int? idPropietarioSeleccionado = null, int? idTipoSeleccionado = null)
         {
-            var propietarios = repositorioPropietario.ObtenerLista(1, int.MaxValue);
-            ViewBag.Propietarios = new SelectList(propietarios, nameof(Propietario.IdPropietario), null, idPropietarioSeleccionado);
+            if (idPropietarioSeleccionado.HasValue)
+            {
+                var propietario = repositorioPropietario.ObtenerPorId(idPropietarioSeleccionado.Value);
+                ViewBag.PropietarioSeleccionadoTexto = propietario?.ToString();
+            }
 
             var tipos = repositorioTipoInmueble.ObtenerLista(1, int.MaxValue);
             ViewBag.Tipos = new SelectList(tipos, nameof(TipoInmueble.IdTipoInmueble), nameof(TipoInmueble.Nombre), idTipoSeleccionado);
         }
 
-                // GET: Inmuebles/Create
+        // GET: Inmuebles/Buscar/q
+        // [Route("[controller]/Buscar/{q}")]
+        public IActionResult Buscar(string q)
+        {
+            try
+            {
+                var res = repositorio.BuscarPorDireccion(q);
+                return Json(new { datos = res.Select(i => new { id = i.IdInmueble, texto = i.Direccion }) });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { error = ex.Message });
+            }
+        }
+        // GET: Inmuebles/Create
         public ActionResult Create()
         {
             try
@@ -101,7 +121,7 @@ namespace inmobiliariaFUNES.Controllers
             }
         }
 
-                // POST: Inmuebles/Create
+        // POST: Inmuebles/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Create(Inmueble inmueble)
@@ -181,7 +201,7 @@ namespace inmobiliariaFUNES.Controllers
             return $"/uploads/inmuebles/{idInmueble}/{nombreArchivo}";
         }
 
-                // GET: Inmuebles/Edit/5
+        // GET: Inmuebles/Edit/5
         public ActionResult Edit(int id)
         {
             try
@@ -199,7 +219,7 @@ namespace inmobiliariaFUNES.Controllers
             }
         }
 
-                // POST: Inmuebles/Edit/5
+        // POST: Inmuebles/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Edit(int id, Inmueble entidad)
@@ -277,6 +297,7 @@ namespace inmobiliariaFUNES.Controllers
         }
 
                 // GET: Inmuebles/Eliminar/5
+        [Authorize(Policy = "Administrador")]
         public ActionResult Eliminar(int id)
         {
             try
@@ -296,6 +317,7 @@ namespace inmobiliariaFUNES.Controllers
         // POST: Inmuebles/Eliminar/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "Administrador")]
         public ActionResult Eliminar(int id, Inmueble entidad)
         {
             try
@@ -315,9 +337,10 @@ namespace inmobiliariaFUNES.Controllers
             }
         }
 
-                // POST: Inmuebles/Reactivar/5
+        // POST: Inmuebles/Reactivar/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "Administrador")]
         public ActionResult Reactivar(int id)
         {
             try

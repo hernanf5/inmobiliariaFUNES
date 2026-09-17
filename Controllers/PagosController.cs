@@ -149,6 +149,7 @@ namespace inmobiliariaFUNES.Controllers
             }
         }
         // GET: Pagos/Eliminar/5
+        [Authorize(Policy = "Administrador")]
         public ActionResult Eliminar(int id)
         {
             try
@@ -175,6 +176,7 @@ namespace inmobiliariaFUNES.Controllers
         // POST: Pagos/Eliminar/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "Administrador")]
         public ActionResult Eliminar(int id, Pago entidad)
         {
             try

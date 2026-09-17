@@ -12,5 +12,6 @@ namespace inmobiliariaFUNES.Models
         IList<Inmueble> ObtenerDisponiblesEntreFechas(DateTime fechaDesde, DateTime fechaHasta);
         IList<ImagenInmueble> ObtenerImagenes(int idInmueble);
         int Reactivar(Inmueble entidad);
+        IList<Inmueble> BuscarPorDireccion(string direccion);
     }
 }

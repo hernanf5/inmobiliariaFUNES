@@ -309,6 +309,82 @@ namespace inmobiliariaFUNES.Controllers
             }
         }
 
+                // GET: Usuarios/MiPerfil
+        [Authorize]
+        public ActionResult MiPerfil()
+        {
+            try
+            {
+                var idPropio = ObtenerIdUsuarioLogueado();
+                var entidad = repositorio.ObtenerPorId(idPropio);
+                if (entidad == null)
+                    return NotFound();
+                if (TempData.ContainsKey("Mensaje"))
+                    ViewBag.Mensaje = TempData["Mensaje"];
+                return View(entidad);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error en MiPerfil");
+                throw;
+            }
+        }
+
+        // POST: Usuarios/MiPerfil
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize]
+        public async Task<ActionResult> MiPerfil(Usuario entidad)
+        {
+            try
+            {
+                ModelState.Remove(nameof(Usuario.Clave));
+                ModelState.Remove(nameof(Usuario.Rol));
+
+                var idPropio = ObtenerIdUsuarioLogueado();
+                var u = repositorio.ObtenerPorId(idPropio);
+                if (u == null)
+                    return NotFound();
+
+                if (!ModelState.IsValid)
+                    return View(entidad);
+
+                u.Nombre = entidad.Nombre;
+                u.Email = entidad.Email;
+                repositorio.Modificacion(u);
+
+                // Refrescamos la cookie con los datos nuevos, para que el
+                // navbar se actualice sin tener que cerrar sesión y volver a entrar.
+                var claims = new List<System.Security.Claims.Claim>
+                {
+                    new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, u.IdUsuario.ToString()),
+                    new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Name, u.Email),
+                    new System.Security.Claims.Claim("NombreCompleto", u.Nombre),
+                    new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Role, u.RolNombre),
+                };
+                var claimsIdentity = new System.Security.Claims.ClaimsIdentity(
+                    claims,
+                    Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme);
+                await HttpContext.SignInAsync(
+                    Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme,
+                    new System.Security.Claims.ClaimsPrincipal(claimsIdentity));
+
+                TempData["Mensaje"] = "Tus datos se actualizaron correctamente";
+                return RedirectToAction(nameof(MiPerfil));
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error en MiPerfil");
+                throw;
+            }
+        }
+
+        private int ObtenerIdUsuarioLogueado()
+        {
+            var idTexto = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            return int.TryParse(idTexto, out var id) ? id : 0;
+        }
+
         [Route("salir")]
         public async Task<ActionResult> Logout()
         {
