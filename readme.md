@@ -14,7 +14,16 @@ Repositorio: https://github.com/hernanf5/inmobiliariaFUNES
 
 ## Estado del proyecto
 
-**Primera entrega**: ABM (Alta, Baja y Modificación) de Propietarios e Inquilinos.
+**Entrega final completa.** El proyecto implementa toda la funcionalidad de la narrativa:
+
+* ABM completo (Alta, Baja lógica, Modificación, Detalle) de Propietario, Inquilino, TipoInmueble, Inmueble, Reserva, Pago y Usuario.
+* Login con roles Administrador/Empleado (autenticación por cookies). Solo Administrador puede eliminar/suspender/anular/reactivar entidades; cualquier usuario logueado puede editar su propio perfil.
+* Inmueble: carga de portada y galería de imágenes, suspensión/reactivación de la oferta.
+* Reserva: validación de superposición de fechas, terminación anticipada con cálculo de multa (50%/25% según el tiempo cumplido), renovación/extensión sin modificar la reserva original.
+* Pago: asociado a una reserva, edición limitada al concepto, anulación lógica (nunca se borra).
+* Auditoría de quién creó/anuló/terminó cada Reserva y Pago, visible solo para Administradores.
+* Los 8 informes de la narrativa (inmuebles por propietario, más reservados, sin reservas en X días, reservas vigentes, que terminan en X días, pagos por reserva, disponibilidad entre fechas), incluyendo la integración de la búsqueda de disponibilidad al flujo de creación de reservas.
+* Paginado server-side en todos los listados, y búsqueda server-side con autocompletado (sin cargar listas completas en los desplegables) para Propietario, Inquilino e Inmueble.
 
 ---
 
@@ -113,7 +122,7 @@ erDiagram
         int id PK
         string email
         string clave
-        string rol
+        int rol
         string nombre
         string avatar_url
     }

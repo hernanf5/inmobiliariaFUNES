@@ -9,7 +9,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     .AddCookie(options =>
     {
         options.LoginPath = "/Usuarios/Login";
-        options.AccessDeniedPath = "/Usuarios/Restringido";
+        options.AccessDeniedPath = "/Home/Restringido";
     });
 builder.Services.AddAuthorization(options =>
 {
