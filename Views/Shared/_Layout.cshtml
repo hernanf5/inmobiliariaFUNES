@@ -6,6 +6,7 @@
     <title>@ViewData["Title"] - inmobiliariaFUNES</title>
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/css/tailwind-output.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 </head>
 <body>
     <header>
@@ -88,8 +89,10 @@
         </div>
     </footer>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/autocompletar.js" asp-append-version="true"></script>
+    <script src="~/js/mapa-inmueble.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

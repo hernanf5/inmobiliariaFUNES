@@ -51,6 +51,30 @@
         </div>
     }
 </div>
+
+@if (Model.Latitud != null && Model.Longitud != null)
+{
+    <div class="mt-4 max-w-xl">
+        <h2 class="text-sm font-medium text-gray-700 mb-2">Ubicación</h2>
+        <div id="mapa" style="height: 300px;" class="rounded-lg border border-gray-200"></div>
+    </div>
+
+    @section Scripts {
+        <script>
+            const lat = @Model.Latitud.Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            const lng = @Model.Longitud.Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            const direccion = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Direccion));
+
+            const mapa = L.map('mapa').setView([lat, lng], 16);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(mapa);
+            L.marker([lat, lng]).addTo(mapa)
+                .bindPopup(direccion)
+                .openPopup();
+        </script>
+    }
+}
 @{
     var galeria = Model.Imagenes.Where(i => !i.EsPortada).ToList();
 }
