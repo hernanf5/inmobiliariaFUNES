@@ -12,5 +12,14 @@
   "devDependencies": {
     "@tailwindcss/cli": "^4.3.3",
     "tailwindcss": "^4.3.3"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hernanf5/inmobiliariaFUNES.git"
+  },
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/hernanf5/inmobiliariaFUNES/issues"
+  },
+  "homepage": "https://github.com/hernanf5/inmobiliariaFUNES#readme"
 }

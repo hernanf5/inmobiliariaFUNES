@@ -44,7 +44,22 @@
                         @if (User.Identity != null && User.Identity.IsAuthenticated)
                         {
                             <li>
-                                <a class="text-gray-600 hover:text-gray-900" asp-controller="Usuarios" asp-action="MiPerfil">@User.FindFirst("NombreCompleto")?.Value</a>
+                                <a class="flex items-center gap-2 text-gray-600 hover:text-gray-900" asp-controller="Usuarios" asp-action="MiPerfil">
+                                    @{
+                                        var avatarUrl = User.FindFirst("AvatarUrl")?.Value;
+                                    }
+                                    @if (!string.IsNullOrEmpty(avatarUrl))
+                                    {
+                                        <img src="@avatarUrl" class="w-6 h-6 rounded-full object-cover" />
+                                    }
+                                    else
+                                    {
+                                        <span class="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-[10px] font-medium text-gray-500">
+                                            @(User.FindFirst("NombreCompleto")?.Value?.Substring(0, 1).ToUpper())
+                                        </span>
+                                    }
+                                    @User.FindFirst("NombreCompleto")?.Value
+                                </a>
                             </li>
                             <li>
                                 <a class="text-gray-600 hover:text-gray-900" href="/salir">Salir</a>

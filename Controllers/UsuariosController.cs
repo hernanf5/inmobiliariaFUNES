@@ -3,6 +3,8 @@ using inmobiliariaFUNES.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication;
+using System.IO;
+using Microsoft.AspNetCore.Hosting;
 
 namespace inmobiliariaFUNES.Controllers
 {
@@ -10,12 +12,14 @@ namespace inmobiliariaFUNES.Controllers
     {
         private readonly IRepositorioUsuario repositorio;
         private readonly ServicioHash servicioHash;
+        private readonly IWebHostEnvironment environment;
         private readonly ILogger<UsuariosController> logger;
 
-        public UsuariosController(IRepositorioUsuario repo, ServicioHash servicioHash, ILogger<UsuariosController> logger)
+        public UsuariosController(IRepositorioUsuario repo, ServicioHash servicioHash, IWebHostEnvironment environment, ILogger<UsuariosController> logger)
         {
             this.repositorio = repo;
             this.servicioHash = servicioHash;
+            this.environment = environment;
             this.logger = logger;
         }
 
@@ -288,6 +292,7 @@ namespace inmobiliariaFUNES.Controllers
                     new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Name, usuario.Email),
                     new System.Security.Claims.Claim("NombreCompleto", usuario.Nombre),
                     new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Role, usuario.RolNombre),
+                    new System.Security.Claims.Claim("AvatarUrl", usuario.AvatarUrl ?? ""),
                 };
 
                 var claimsIdentity = new System.Security.Claims.ClaimsIdentity(
@@ -351,16 +356,32 @@ namespace inmobiliariaFUNES.Controllers
 
                 u.Nombre = entidad.Nombre;
                 u.Email = entidad.Email;
+
+                if (entidad.AvatarFile != null && entidad.AvatarFile.Length > 0)
+                {
+                    string carpetaAvatares = Path.Combine(environment.WebRootPath, "uploads", "avatares");
+                    Directory.CreateDirectory(carpetaAvatares);
+
+                    string nombreArchivo = $"avatar_{u.IdUsuario}{Path.GetExtension(entidad.AvatarFile.FileName)}";
+                    string rutaFisica = Path.Combine(carpetaAvatares, nombreArchivo);
+
+                    using (var stream = new FileStream(rutaFisica, FileMode.Create))
+                    {
+                        await entidad.AvatarFile.CopyToAsync(stream);
+                    }
+
+                    u.AvatarUrl = $"/uploads/avatares/{nombreArchivo}";
+                }
+
                 repositorio.Modificacion(u);
 
-                // Refrescamos la cookie con los datos nuevos, para que el
-                // navbar se actualice sin tener que cerrar sesión y volver a entrar.
                 var claims = new List<System.Security.Claims.Claim>
                 {
                     new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, u.IdUsuario.ToString()),
                     new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Name, u.Email),
                     new System.Security.Claims.Claim("NombreCompleto", u.Nombre),
                     new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Role, u.RolNombre),
+                    new System.Security.Claims.Claim("AvatarUrl", u.AvatarUrl ?? ""),
                 };
                 var claimsIdentity = new System.Security.Claims.ClaimsIdentity(
                     claims,

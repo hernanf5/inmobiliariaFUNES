@@ -62,7 +62,7 @@ namespace inmobiliariaFUNES.Models
             using (MySqlConnection connection = new MySqlConnection(connectionString))
             {
                 string sql = @$"UPDATE Usuario
-                    SET {nameof(Usuario.Email)}=@email, {nameof(Usuario.Clave)}=@clave, {nameof(Usuario.Nombre)}=@nombre, {nameof(Usuario.Rol)}=@rol
+                    SET {nameof(Usuario.Email)}=@email, {nameof(Usuario.Clave)}=@clave, {nameof(Usuario.Nombre)}=@nombre, {nameof(Usuario.Rol)}=@rol, {nameof(Usuario.AvatarUrl)}=@avatarUrl
                     WHERE {nameof(Usuario.IdUsuario)} = @id";
                 using (MySqlCommand command = new MySqlCommand(sql, connection))
                 {
@@ -71,6 +71,7 @@ namespace inmobiliariaFUNES.Models
                     command.Parameters.AddWithValue("@clave", u.Clave);
                     command.Parameters.AddWithValue("@nombre", u.Nombre);
                     command.Parameters.AddWithValue("@rol", u.Rol);
+                    command.Parameters.AddWithValue("@avatarUrl", (object?)u.AvatarUrl ?? DBNull.Value);
                     command.Parameters.AddWithValue("@id", u.IdUsuario);
                     connection.Open();
                     res = command.ExecuteNonQuery();
@@ -85,7 +86,7 @@ namespace inmobiliariaFUNES.Models
             using (MySqlConnection connection = new MySqlConnection(connectionString))
             {
                 string sql = @$"
-                    SELECT {nameof(Usuario.IdUsuario)}, {nameof(Usuario.Email)}, {nameof(Usuario.Clave)}, {nameof(Usuario.Nombre)}, {nameof(Usuario.Rol)}, {nameof(Usuario.Activo)}
+                    SELECT {nameof(Usuario.IdUsuario)}, {nameof(Usuario.Email)}, {nameof(Usuario.Clave)}, {nameof(Usuario.Nombre)}, {nameof(Usuario.Rol)}, {nameof(Usuario.Activo)}, {nameof(Usuario.AvatarUrl)}
                     FROM Usuario
                     WHERE {nameof(Usuario.Activo)} = 1
                     ORDER BY {nameof(Usuario.Nombre)}
@@ -128,7 +129,7 @@ namespace inmobiliariaFUNES.Models
             Usuario? u = null;
             using (MySqlConnection connection = new MySqlConnection(connectionString))
             {
-                string sql = @$"SELECT {nameof(Usuario.IdUsuario)}, {nameof(Usuario.Email)}, {nameof(Usuario.Clave)}, {nameof(Usuario.Nombre)}, {nameof(Usuario.Rol)}, {nameof(Usuario.Activo)}
+                string sql = @$"SELECT {nameof(Usuario.IdUsuario)}, {nameof(Usuario.Email)}, {nameof(Usuario.Clave)}, {nameof(Usuario.Nombre)}, {nameof(Usuario.Rol)}, {nameof(Usuario.Activo)}, {nameof(Usuario.AvatarUrl)}
                     FROM Usuario
                     WHERE {nameof(Usuario.IdUsuario)} = @id";
                 using (MySqlCommand command = new MySqlCommand(sql, connection))
@@ -152,7 +153,7 @@ namespace inmobiliariaFUNES.Models
             Usuario? u = null;
             using (MySqlConnection connection = new MySqlConnection(connectionString))
             {
-                string sql = @$"SELECT {nameof(Usuario.IdUsuario)}, {nameof(Usuario.Email)}, {nameof(Usuario.Clave)}, {nameof(Usuario.Nombre)}, {nameof(Usuario.Rol)}, {nameof(Usuario.Activo)}
+                string sql = @$"SELECT {nameof(Usuario.IdUsuario)}, {nameof(Usuario.Email)}, {nameof(Usuario.Clave)}, {nameof(Usuario.Nombre)}, {nameof(Usuario.Rol)}, {nameof(Usuario.Activo)}, {nameof(Usuario.AvatarUrl)}
                     FROM Usuario
                     WHERE {nameof(Usuario.Email)} = @email AND {nameof(Usuario.Activo)} = 1";
                 using (MySqlCommand command = new MySqlCommand(sql, connection))
@@ -180,6 +181,7 @@ namespace inmobiliariaFUNES.Models
                 Nombre = reader.GetString(reader.GetOrdinal(nameof(Usuario.Nombre))),
                 Rol = reader.GetInt32(reader.GetOrdinal(nameof(Usuario.Rol))),
                 Activo = reader.GetBoolean(reader.GetOrdinal(nameof(Usuario.Activo))),
+                AvatarUrl = reader.IsDBNull(reader.GetOrdinal(nameof(Usuario.AvatarUrl))) ? null : reader.GetString(reader.GetOrdinal(nameof(Usuario.AvatarUrl))),
             };
         }
     }

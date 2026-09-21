@@ -27,6 +27,9 @@ namespace inmobiliariaFUNES.Models
         public int Rol { get; set; }
 
         public bool Activo { get; set; } = true;
+        public string? AvatarUrl { get; set; }
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public Microsoft.AspNetCore.Http.IFormFile? AvatarFile { get; set; }
 
         public string RolNombre => Rol > 0 ? ((RolUsuario)Rol).ToString() : "";
 
