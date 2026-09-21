@@ -12,17 +12,20 @@ namespace inmobiliariaFUNES.Controllers
         private readonly IRepositorioReserva repositorio;
         private readonly IRepositorioInquilino repositorioInquilino;
         private readonly IRepositorioInmueble repositorioInmueble;
+        private readonly IRepositorioPago repositorioPago;
         private readonly ILogger<ReservasController> logger;
 
         public ReservasController(
             IRepositorioReserva repo,
             IRepositorioInquilino repoInquilino,
             IRepositorioInmueble repoInmueble,
+            IRepositorioPago repoPago,
             ILogger<ReservasController> logger)
         {
             this.repositorio = repo;
             this.repositorioInquilino = repoInquilino;
             this.repositorioInmueble = repoInmueble;
+            this.repositorioPago = repoPago;
             this.logger = logger;
         }
 
@@ -156,7 +159,9 @@ namespace inmobiliariaFUNES.Controllers
                     CargarListasDesplegables(reserva.IdInquilino, reserva.IdInmueble);
                     return View(reserva);
                 }
-                reserva.IdUsuarioCreador = ObtenerIdUsuarioLogueado();
+                var idUsuarioActual = ObtenerIdUsuarioLogueado();
+                reserva.IdUsuarioCreador = idUsuarioActual;
+
                 try
                 {
                     repositorio.Alta(reserva);
@@ -168,8 +173,12 @@ namespace inmobiliariaFUNES.Controllers
                     return View(reserva);
                 }
 
+                var señ = CrearSeñaSiCorresponde(reserva, idUsuarioActual);
+
                 TempData["Id"] = reserva.IdReserva;
-                TempData["Mensaje"] = "Reserva creada correctamente";
+                TempData["Mensaje"] = señ > 0
+                    ? $"Reserva creada correctamente. Seña cargada como pago: ${señ:N2}"
+                    : "Reserva creada correctamente";
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
@@ -321,6 +330,31 @@ namespace inmobiliariaFUNES.Controllers
             return Math.Round(montoRestante * porcentajeMulta, 2);
         }
 
+        private decimal CrearSeñaSiCorresponde(Reserva reserva, int idUsuario)
+        {
+            var inmueble = repositorioInmueble.ObtenerPorId(reserva.IdInmueble);
+            if (inmueble == null || inmueble.PorcentajeReserva <= 0)
+                return 0;
+
+            var dias = (reserva.FechaHastaOriginal - reserva.FechaDesde).Days;
+            var totalAlquiler = dias * reserva.MontoPorDia;
+            var señ = Math.Round(totalAlquiler * (inmueble.PorcentajeReserva / 100), 2);
+
+            if (señ <= 0)
+                return 0;
+
+            repositorioPago.Alta(new Pago
+            {
+                IdReserva = reserva.IdReserva,
+                Concepto = $"Seña ({inmueble.PorcentajeReserva:N0}% al confirmar la reserva)",
+                FechaPago = DateTime.Today,
+                Importe = señ,
+                IdUsuarioCreador = idUsuario,
+            });
+
+            return señ;
+        }
+
         // GET: Reservas/Terminar/5
         public ActionResult Terminar(int id)
         {
@@ -369,10 +403,24 @@ namespace inmobiliariaFUNES.Controllers
                 }
 
                 var multa = CalcularMulta(entidad, fechaTerminacion);
-                entidad.IdUsuarioTerminador = ObtenerIdUsuarioLogueado();
+                var idUsuario = ObtenerIdUsuarioLogueado();
+                entidad.IdUsuarioTerminador = idUsuario;
                 repositorio.Terminar(entidad, fechaTerminacion, multa);
 
-                TempData["Mensaje"] = $"Reserva terminada anticipadamente. Multa calculada: ${multa:N2}";
+                if (multa > 0)
+                {
+                    var pagoMulta = new Pago
+                    {
+                        IdReserva = entidad.IdReserva,
+                        Concepto = "Multa por terminación anticipada",
+                        FechaPago = fechaTerminacion,
+                        Importe = multa,
+                        IdUsuarioCreador = idUsuario,
+                    };
+                    repositorioPago.Alta(pagoMulta);
+                }
+
+                TempData["Mensaje"] = $"Reserva terminada anticipadamente. Multa cargada como pago: ${multa:N2}";
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
@@ -442,6 +490,7 @@ namespace inmobiliariaFUNES.Controllers
                     return View(reserva);
                 }
 
+                var idUsuarioActual = ObtenerIdUsuarioLogueado();
                 var nueva = new Reserva
                 {
                     IdInquilino = original.IdInquilino,
@@ -450,7 +499,7 @@ namespace inmobiliariaFUNES.Controllers
                     MontoPorDia = reserva.MontoPorDia,
                     FechaDesde = reserva.FechaDesde,
                     FechaHastaOriginal = reserva.FechaHastaOriginal,
-                    IdUsuarioCreador = ObtenerIdUsuarioLogueado(),
+                    IdUsuarioCreador = idUsuarioActual,
                 };
 
                 try
@@ -464,8 +513,12 @@ namespace inmobiliariaFUNES.Controllers
                     return View(reserva);
                 }
 
+                var señ = CrearSeñaSiCorresponde(nueva, idUsuarioActual);
+
                 TempData["Id"] = nueva.IdReserva;
-                TempData["Mensaje"] = $"Reserva renovada correctamente (nueva reserva #{nueva.IdReserva})";
+                TempData["Mensaje"] = señ > 0
+                    ? $"Reserva renovada correctamente (nueva reserva #{nueva.IdReserva}). Seña cargada como pago: ${señ:N2}"
+                    : $"Reserva renovada correctamente (nueva reserva #{nueva.IdReserva})";
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
